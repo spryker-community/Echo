@@ -41,8 +41,8 @@ Project plan: see /project_briefing.md
 ### 3. UI Enhancements ✅
 - [x] Implement content filtering by source
 - [x] Add quick actions (regenerate, edit, copy)
-- [ ] Enhance card display with more metadata
-- [ ] Improve message preview formatting
+- [x] Enhance card display with more metadata
+- [x] Improve message preview formatting
 
 ## Phase 3 - Additional Sources (Week 5-6)
 
@@ -120,7 +120,7 @@ Content Sources → Integration Layer → Content Processing → UI Display → 
 - ✅ Start with forum posts only
 - ✅ Add message generation as soon as basic display works
 - ✅ Enhance features based on user feedback
-- 🚧 Add sources one at a time
+- 🚧 Add sources one at time
 - ✅ Continuously improve message generation quality
 
 Legend:

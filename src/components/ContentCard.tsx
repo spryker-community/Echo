@@ -19,6 +19,15 @@ export function ContentCard({ item, onGenerate }: ContentCardProps) {
     ? item.metadata.countComments 
     : null;
 
+  const handleGenerateClick = React.useCallback(() => {
+    console.log('Generate button clicked for item:', {
+      id: item.id,
+      title: item.title,
+      source: item.source
+    });
+    onGenerate(item);
+  }, [item, onGenerate]);
+
   return (
     <Card className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group">
       <CardHeader className="p-6 pb-0">
@@ -58,10 +67,14 @@ export function ContentCard({ item, onGenerate }: ContentCardProps) {
           )}
         </div>
         <button
-          onClick={() => onGenerate(item)}
+          onClick={handleGenerateClick}
           className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg 
                      hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
-                     transition-colors duration-300 ease-in-out"
+                     transition-colors duration-300 ease-in-out cursor-pointer"
+          data-testid="generate-insight-button"
+          type="button"
+          role="button"
+          aria-label="Generate insight"
         >
           Generate Insight
         </button>

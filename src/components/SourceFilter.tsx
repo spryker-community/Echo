@@ -2,68 +2,101 @@ import React from 'react';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { useSources } from '../context/SourceContext';
+import { useYouTubeVideos } from '../hooks/useYouTubeVideos';
+import { useForumPosts } from '../hooks/useForumPosts';
 
 export function SourceFilter() {
   const { sources, toggleSource } = useSources();
+  const { data: youtubeVideos, error: youtubeError } = useYouTubeVideos();
+  const { data: forumPosts, error: forumError } = useForumPosts();
 
-  const sourceDetails = {
-    'vanilla-forum': {
-      name: 'Community Forum',
-      icon: <img src="/images/commercequest.png" alt="Community Forum" className="w-6 h-6 object-contain" />
-    },
-    'youtube': {
-      name: 'YouTube',
-      icon: '📺'
+  const getSourceStatus = (sourceId: string) => {
+    if (sourceId === 'youtube') {
+      if (youtubeError) {
+        const errorMessage = youtubeError instanceof Error ? youtubeError.message : String(youtubeError);
+        if (errorMessage.includes('quota exceeded')) {
+          return '(API Limit Reached)';
+        }
+        return '(Error)';
+      }
+      if (!youtubeVideos?.length) return '(No videos)';
+      return `(${youtubeVideos.length} videos)`;
+    }
+    if (sourceId === 'vanilla-forum') {
+      if (forumError) return '(Error)';
+      if (!forumPosts?.length) return '(No posts)';
+      return `(${forumPosts.length} posts)`;
+    }
+    return '';
+  };
+
+  const getSourceIcon = (sourceId: string) => {
+    switch (sourceId) {
+      case 'youtube':
+        return '/images/youtube.svg';
+      case 'vanilla-forum':
+        return '/images/commercequest.png';
+      default:
+        return '';
     }
   };
 
+  const getSourceLabel = (sourceId: string) => {
+    switch (sourceId) {
+      case 'youtube':
+        return 'YouTube';
+      case 'vanilla-forum':
+        return 'Community Forum';
+      default:
+        return sourceId;
+    }
+  };
+
+  const getStatusColor = (sourceId: string) => {
+    if (sourceId === 'youtube' && youtubeError) {
+      const errorMessage = youtubeError instanceof Error ? youtubeError.message : String(youtubeError);
+      if (errorMessage.includes('quota exceeded')) {
+        return 'text-yellow-500 dark:text-yellow-400';
+      }
+      return 'text-red-500 dark:text-red-400';
+    }
+    if (sourceId === 'vanilla-forum' && forumError) {
+      return 'text-red-500 dark:text-red-400';
+    }
+    return 'text-gray-500 dark:text-gray-400';
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-          <span className="mr-3">🌐</span>
-          Content Sources
-        </h2>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          {sources.filter(s => s.enabled).length} / {sources.length} Active
-        </span>
-      </div>
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        Content Sources
+      </h2>
       <div className="space-y-4">
-        {sources.map(source => (
-          <div 
-            key={source.id} 
-            className={`
-              flex items-center justify-between p-3 rounded-lg transition-all duration-300
-              ${source.enabled 
-                ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800' 
-                : 'bg-gray-50 dark:bg-gray-700/20 border border-gray-100 dark:border-gray-600'}
-            `}
+        {sources.map((source) => (
+          <div
+            key={source.id}
+            className="flex items-center justify-between"
           >
-            <div className="flex items-center space-x-4">
-              <span className="text-2xl flex items-center justify-center w-8 h-8">
-                {sourceDetails[source.id as keyof typeof sourceDetails].icon}
-              </span>
-              <Label 
-                htmlFor={source.id} 
-                className={`
-                  text-sm font-medium 
-                  ${source.enabled 
-                    ? 'text-blue-800 dark:text-blue-200' 
-                    : 'text-gray-600 dark:text-gray-300'}
-                `}
-              >
-                {sourceDetails[source.id as keyof typeof sourceDetails].name}
+            <div className="flex items-center space-x-3">
+              <Label htmlFor={source.id} className="flex items-center space-x-2">
+                <img 
+                  src={getSourceIcon(source.id)} 
+                  alt={getSourceLabel(source.id)}
+                  className="w-6 h-6 object-contain"
+                />
+                <span className="font-medium">
+                  {getSourceLabel(source.id)}
+                </span>
+                <span className={`text-sm ${getStatusColor(source.id)}`}>
+                  {getSourceStatus(source.id)}
+                </span>
               </Label>
             </div>
             <Switch
               id={source.id}
               checked={source.enabled}
               onCheckedChange={() => toggleSource(source.id)}
-              className={`
-                ${source.enabled 
-                  ? 'border-blue-300 dark:border-blue-700' 
-                  : 'border-gray-300 dark:border-gray-600'}
-              `}
+              aria-label={`Toggle ${getSourceLabel(source.id)}`}
             />
           </div>
         ))}

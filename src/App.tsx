@@ -11,30 +11,52 @@ import { useToast } from './hooks/useToast';
 import { ContentItem } from './types';
 import { Toaster } from './components/ui/toaster';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    mutations: {
+      retry: 1,
+      onError: (error) => {
+        console.error('Query/Mutation Error:', error);
+      }
+    }
+  }
+});
 
 function AppContent() {
-  const { mutate: generateMessage, data: generatedMessage } = useMessageGeneration();
+  const { mutate: generateMessage, data: generatedMessage, error: mutationError } = useMessageGeneration();
   const { showToast } = useToast();
   const [lastSourceItem, setLastSourceItem] = useState<ContentItem | null>(null);
 
-  const handleGenerate = (item: ContentItem) => {
-    setLastSourceItem(item);
-    generateMessage(item, {
-      onSuccess: () => {
-        showToast({
-          title: 'Message Generated 🎉',
-          description: 'Your insightful message is ready to be shared.',
-        });
-      },
-      onError: () => {
-        showToast({
-          title: 'Generation Failed 😔',
-          description: 'Please try again later.',
-          variant: 'destructive',
-        });
-      },
-    });
+  const handleGenerate = async (item: ContentItem) => {
+    try {
+      console.log('Starting message generation for item:', item);
+      setLastSourceItem(item);
+      
+      generateMessage(item, {
+        onSuccess: (data) => {
+          console.log('Message generation succeeded:', data);
+          showToast({
+            title: 'Message Generated 🎉',
+            description: 'Your insightful message is ready to be shared.',
+          });
+        },
+        onError: (error) => {
+          console.error('Message generation failed:', error);
+          showToast({
+            title: 'Generation Failed 😔',
+            description: error instanceof Error ? error.message : 'Please try again later.',
+            variant: 'destructive',
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error in handleGenerate:', error);
+      showToast({
+        title: 'Generation Failed 😔',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleCopy = () => {
@@ -49,9 +71,17 @@ function AppContent() {
 
   const handleRegenerate = () => {
     if (lastSourceItem) {
+      console.log('Regenerating message for item:', lastSourceItem);
       generateMessage(lastSourceItem);
     }
   };
+
+  // Log any mutation errors
+  React.useEffect(() => {
+    if (mutationError) {
+      console.error('Mutation error:', mutationError);
+    }
+  }, [mutationError]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">

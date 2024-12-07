@@ -4,45 +4,92 @@ import { teams } from '../../config/teams';
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
 async function makeOpenRouterRequest(messages: Array<{ role: string; content: string }>) {
-  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${import.meta.env.OPENROUTER_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: import.meta.env.AI_MODEL || 'anthropic/claude-3.5-haiku-20241022',
+  try {
+    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+    if (!apiKey) {
+      console.error('API Key missing:', { 
+        hasKey: !!apiKey,
+        envMode: import.meta.env.MODE,
+        isDev: import.meta.env.DEV,
+        isProd: import.meta.env.PROD
+      });
+      throw new Error('OpenRouter API key is missing. Please check your environment variables.');
+    }
+
+    const requestBody = {
+      model: import.meta.env.VITE_AI_MODEL || 'anthropic/claude-3-haiku',
       messages,
-    }),
-  });
+      max_tokens: 1000,
+      temperature: 0.7,
+      stream: false
+    };
 
-  if (!response.ok) {
-    throw new Error(`OpenRouter API request failed: ${response.statusText}`);
+    console.log('Making OpenRouter request:', {
+      url: `${OPENROUTER_BASE_URL}/chat/completions`,
+      model: requestBody.model,
+      messageCount: messages.length
+    });
+
+    const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'Community Echo'
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    console.log('OpenRouter API Response Status:', response.status);
+
+    const responseText = await response.text();
+    console.log('OpenRouter API Response:', responseText);
+
+    if (!response.ok) {
+      throw new Error(`OpenRouter API request failed: ${response.status} ${response.statusText} - ${responseText}`);
+    }
+
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error('OpenRouter API Error:', error);
+    throw error;
   }
-
-  return response.json();
 }
 
 export async function analyzeAudience(item: ContentItem): Promise<Team[]> {
-  const prompt = `Given this content from our community:
-Title: ${item.title}
-Description: ${item.description}
-Source: ${item.source}
+  const testPrompt = `Please analyze this title and return 1-2 relevant teams from this list: ${teams.join(', ')}
 
-Analyze which internal teams would benefit most from this information. Available teams:
-${teams.join(', ')}
+Title: "${item.title}"
 
-Return only the most relevant teams (maximum 3) as a comma-separated list.`;
+Return only the team names as a comma-separated list, nothing else.`;
 
-  const response = await makeOpenRouterRequest([
-    { role: 'user', content: prompt }
-  ]);
+  try {
+    console.log('Starting audience analysis for:', item.title);
+    const response = await makeOpenRouterRequest([
+      { role: 'system', content: 'You are a helpful assistant that analyzes content and identifies relevant teams. Always respond with just the team names as a comma-separated list.' },
+      { role: 'user', content: testPrompt }
+    ]);
 
-  const suggestedTeams = response.choices[0].message.content?.split(',')
-    .map((team: string) => team.trim())
-    .filter((team: string) => teams.includes(team as Team)) as Team[];
+    if (!response.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response format from API');
+    }
 
-  return suggestedTeams;
+    const suggestedTeams = response.choices[0].message.content
+      .split(',')
+      .map((team: string) => team.trim())
+      .filter((team: string) => teams.includes(team as Team)) as Team[];
+
+    if (suggestedTeams.length === 0) {
+      return [teams[0]];
+    }
+
+    console.log('Analyzed teams:', suggestedTeams);
+    return suggestedTeams;
+  } catch (error) {
+    console.error('Team analysis error:', error);
+    throw error;
+  }
 }
 
 export async function generatePost(item: ContentItem, targetAudiences: Team[]): Promise<string> {
@@ -63,9 +110,22 @@ Guidelines:
 
 Format the post in a way that's ready to be copied and shared internally.`;
 
-  const response = await makeOpenRouterRequest([
-    { role: 'user', content: prompt }
-  ]);
+  try {
+    console.log('Starting post generation for:', item.title);
+    const response = await makeOpenRouterRequest([
+      { role: 'system', content: 'You are a helpful assistant that creates engaging internal posts about community content.' },
+      { role: 'user', content: prompt }
+    ]);
 
-  return response.choices[0].message.content || '';
+    if (!response.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response format from API');
+    }
+
+    const content = response.choices[0].message.content;
+    console.log('Generated content:', content);
+    return content;
+  } catch (error) {
+    console.error('Post generation error:', error);
+    throw error;
+  }
 }

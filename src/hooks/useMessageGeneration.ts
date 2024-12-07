@@ -8,15 +8,30 @@ interface GenerateMessageResult {
 }
 
 export function useMessageGeneration() {
-  return useMutation({
+  return useMutation<GenerateMessageResult, Error, ContentItem>({
     mutationFn: async (item: ContentItem): Promise<GenerateMessageResult> => {
-      const targetAudiences = await analyzeAudience(item);
-      const content = await generatePost(item, targetAudiences);
-      
-      return {
-        content,
-        targetAudiences,
-      };
+      try {
+        console.log('Starting message generation for item:', item);
+        
+        const targetAudiences = await analyzeAudience(item);
+        console.log('Audience analysis complete:', targetAudiences);
+
+        const content = await generatePost(item, targetAudiences);
+        console.log('Post generation complete:', content);
+
+        const result = {
+          content,
+          targetAudiences,
+        };
+        console.log('Message generation successful:', result);
+        return result;
+      } catch (error) {
+        console.error('Message generation failed:', error);
+        throw error;
+      }
     },
+    onError: (error) => {
+      console.error('Mutation error:', error);
+    }
   });
 }
