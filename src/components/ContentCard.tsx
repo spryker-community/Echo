@@ -9,7 +9,7 @@ interface ContentCardProps {
 }
 
 export function ContentCard({ item, onGenerate }: ContentCardProps) {
-  const sourceIcons = {
+  const sourceIcons: Record<string, string> = {
     'vanilla-forum': '💬',
     'youtube': '📺'
   };

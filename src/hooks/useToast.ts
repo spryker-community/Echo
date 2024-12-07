@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { toast } from '../components/ui/use-toast';
 
 export function useToast() {
-  const showToast = useCallback(({ title, description, variant = 'default' }: {
+  const showToast = useCallback(({ title, description, variant }: {
     title: string;
     description?: string;
     variant?: 'default' | 'destructive';
@@ -10,7 +10,7 @@ export function useToast() {
     toast({
       title,
       description,
-      variant,
+      ...(variant ? { variant } : {})
     });
   }, []);
 

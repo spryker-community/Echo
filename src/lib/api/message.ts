@@ -39,8 +39,8 @@ Return only the most relevant teams (maximum 3) as a comma-separated list.`;
   ]);
 
   const suggestedTeams = response.choices[0].message.content?.split(',')
-    .map(team => team.trim())
-    .filter(team => teams.includes(team as Team)) as Team[];
+    .map((team: string) => team.trim())
+    .filter((team: string) => teams.includes(team as Team)) as Team[];
 
   return suggestedTeams;
 }
