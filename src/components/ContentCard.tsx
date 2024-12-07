@@ -6,12 +6,17 @@ import { formatDate } from '../lib/utils';
 interface ContentCardProps {
   item: ContentItem;
   onGenerate: (item: ContentItem) => void;
+  generatedContent?: {
+    content: string;
+    targetAudiences: string[];
+  };
+  isGenerating?: boolean;
 }
 
-export function ContentCard({ item, onGenerate }: ContentCardProps) {
+export function ContentCard({ item, onGenerate, generatedContent, isGenerating }: ContentCardProps) {
   const sourceIcons: Record<string, string> = {
-    'vanilla-forum': '💬',
-    'youtube': '📺'
+    'vanilla-forum': '/images/commercequest.png',
+    'youtube': '/images/youtube.svg'
   };
 
   // Safely check if countComments exists and is a number
@@ -19,17 +24,21 @@ export function ContentCard({ item, onGenerate }: ContentCardProps) {
     ? item.metadata.countComments 
     : null;
 
-  const handleGenerateClick = React.useCallback(() => {
-    console.log('Generate button clicked for item:', {
-      id: item.id,
-      title: item.title,
-      source: item.source
-    });
-    onGenerate(item);
-  }, [item, onGenerate]);
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isGenerating) {
+      console.log('Generate button clicked for item:', {
+        id: item.id,
+        title: item.title,
+        source: item.source
+      });
+      onGenerate(item);
+    }
+  };
 
   return (
-    <Card className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group">
+    <Card className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl">
       <CardHeader className="p-6 pb-0">
         <div className="flex items-start space-x-4">
           {item.image && (
@@ -40,43 +49,80 @@ export function ContentCard({ item, onGenerate }: ContentCardProps) {
             />
           )}
           <div className="flex-grow">
-            <CardTitle className="text-lg font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 transition-colors">
-              {item.title}
-            </CardTitle>
-            <CardDescription className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-              <span className="mr-2">{sourceIcons[item.source] || '🌐'}</span>
+            <div className="flex items-center space-x-2 mb-1">
+              <img 
+                src={sourceIcons[item.source]} 
+                alt={item.source}
+                className="w-5 h-5 object-contain"
+              />
+              <CardTitle className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                {item.title}
+              </CardTitle>
+            </div>
+            <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
               {formatDate(item.date)}
+              {commentCount !== null && commentCount !== undefined && (
+                <span className="ml-2">• {String(commentCount)} comments</span>
+              )}
             </CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="p-6 pt-3">
-        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
+        <p className="text-sm text-gray-700 dark:text-gray-300">
           {item.description}
         </p>
       </CardContent>
-      <CardFooter className="p-6 pt-0 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-            {item.source === 'vanilla-forum' ? 'Community Forum' : 'YouTube'}
-          </span>
-          {commentCount !== null && commentCount !== undefined && (
-            <span className="text-xs text-gray-400 dark:text-gray-500">
-              • {String(commentCount)} comments
-            </span>
+      
+      {(generatedContent || isGenerating) && (
+        <div className="mx-6 mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          {isGenerating ? (
+            <div className="flex flex-col items-center justify-center py-4 space-y-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Generating insight...
+              </p>
+            </div>
+          ) : generatedContent && (
+            <>
+              <div className="mb-2 flex items-center justify-between">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white">Generated Insight</h4>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  For: {generatedContent.targetAudiences.join(', ')}
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                {generatedContent.content}
+              </p>
+            </>
           )}
         </div>
+      )}
+
+      <CardFooter className="p-6 pt-0 flex justify-end">
         <button
-          onClick={handleGenerateClick}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg 
-                     hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
-                     transition-colors duration-300 ease-in-out cursor-pointer"
+          onClick={handleClick}
+          disabled={isGenerating}
+          className={`px-4 py-2 text-sm font-medium text-white rounded-lg 
+                     transition-colors duration-300 ease-in-out cursor-pointer
+                     focus:outline-none focus:ring-2 focus:ring-blue-500
+                     ${isGenerating 
+                       ? 'bg-blue-400 cursor-not-allowed' 
+                       : 'bg-blue-600 hover:bg-blue-700'}`}
           data-testid="generate-insight-button"
           type="button"
           role="button"
-          aria-label="Generate insight"
+          aria-label={isGenerating ? 'Generating insight' : 'Generate insight'}
         >
-          Generate Insight
+          {isGenerating 
+            ? 'Generating...' 
+            : generatedContent 
+              ? 'Regenerate Insight' 
+              : 'Generate Insight'}
         </button>
       </CardFooter>
     </Card>

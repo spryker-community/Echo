@@ -9,9 +9,15 @@ import { useSources } from '../context/SourceContext';
 
 interface FeedViewerProps {
   onGenerate: (item: ContentItem) => void;
+  generatedMessage?: {
+    content: string;
+    targetAudiences: string[];
+    sourceItem: ContentItem;
+  };
+  generatingForItem?: ContentItem | null;
 }
 
-export function FeedViewer({ onGenerate }: FeedViewerProps) {
+export function FeedViewer({ onGenerate, generatedMessage, generatingForItem }: FeedViewerProps) {
   const items = useContentItems();
   const { error: youtubeError } = useYouTubeVideos();
   const { error: forumError } = useForumPosts();
@@ -51,21 +57,30 @@ export function FeedViewer({ onGenerate }: FeedViewerProps) {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <SourceFilter />
       </div>
       
       {items.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-6">
           {items.map((item) => (
             <div 
               key={item.id} 
-              className="transition-all duration-300 ease-in-out transform hover:-translate-y-2"
+              className="transition-all duration-300 ease-in-out transform hover:-translate-y-1"
             >
               <ContentCard
                 item={item}
                 onGenerate={onGenerate}
+                isGenerating={generatingForItem?.id === item.id}
+                generatedContent={
+                  generatedMessage?.sourceItem.id === item.id
+                    ? {
+                        content: generatedMessage.content,
+                        targetAudiences: generatedMessage.targetAudiences
+                      }
+                    : undefined
+                }
               />
             </div>
           ))}
