@@ -9,7 +9,7 @@ export function SourceFilter() {
   const sourceDetails = {
     'vanilla-forum': {
       name: 'Community Forum',
-      icon: '💬'
+      icon: <img src="/images/commercequest.png" alt="Community Forum" className="w-6 h-6 object-contain" />
     },
     'youtube': {
       name: 'YouTube',
@@ -40,7 +40,7 @@ export function SourceFilter() {
             `}
           >
             <div className="flex items-center space-x-4">
-              <span className="text-2xl">
+              <span className="text-2xl flex items-center justify-center w-8 h-8">
                 {sourceDetails[source.id as keyof typeof sourceDetails].icon}
               </span>
               <Label 
