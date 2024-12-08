@@ -39,11 +39,11 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
   const getStatusColor = (status: string | undefined) => {
     switch (status) {
       case 'solved':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+        return 'bg-[#00AEEF]/10 text-[#00AEEF] dark:bg-[#00AEEF]/20 dark:text-[#00AEEF]';
       case 'in_progress':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+        return 'bg-[#EC008C]/10 text-[#EC008C] dark:bg-[#EC008C]/20 dark:text-[#EC008C]';
       default:
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+        return 'bg-[#00AEEF]/10 text-[#00AEEF] dark:bg-[#00AEEF]/20 dark:text-[#00AEEF]';
     }
   };
 
@@ -82,7 +82,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
                     href={insertUser.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:underline truncate"
+                    className="hover:underline truncate hover:text-[#00AEEF] dark:hover:text-[#00AEEF]"
                   >
                     {insertUser.name}
                   </a>
@@ -94,7 +94,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
                   href={item.metadata.categoryUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:underline"
+                  className="hover:underline hover:text-[#00AEEF] dark:hover:text-[#00AEEF]"
                 >
                   {categoryName}
                 </a>
@@ -112,8 +112,8 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
             </div>
             {hasNewActivity && (
               <div className="flex items-center gap-2">
-                <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
-                <span className="text-xs text-blue-500 font-medium">
+                <span className="flex h-2 w-2 rounded-full bg-[#00AEEF]"></span>
+                <span className="text-xs text-[#00AEEF] font-medium">
                   Updated {formatRelativeTime(dateLastComment)}
                 </span>
               </div>
@@ -182,7 +182,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
   const isYouTubeContent = item.source === 'youtube' || item.source === 'youtube-search';
 
   return (
-    <Card className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group">
+    <Card className="w-full bg-white dark:bg-[#011427] shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group">
       <CardHeader className="p-6 pb-0">
         <div className="flex items-start gap-4">
           {isYouTubeContent && item.image && (
@@ -200,7 +200,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
                   alt={item.source}
                   className="w-5 h-5 object-contain flex-shrink-0"
                 />
-                <CardTitle className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors truncate">
+                <CardTitle className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-[#00AEEF] transition-colors truncate">
                   <a 
                     href={item.url} 
                     target="_blank" 
@@ -213,7 +213,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
               </div>
               <button
                 onClick={handleHide}
-                className="p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 
+                className="p-1.5 text-gray-400 hover:text-[#EC008C] dark:text-gray-500 dark:hover:text-[#EC008C] 
                          rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
                          opacity-0 group-hover:opacity-100 focus:opacity-100"
                 title="Hide post"
@@ -237,13 +237,13 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
       </CardContent>
       
       {(generatedContent || isGenerating) && (
-        <div className="mx-6 mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+        <div className="mx-6 mb-6 p-4 bg-gray-50 dark:bg-[#011427]/50 rounded-lg border border-gray-100 dark:border-gray-700">
           {isGenerating ? (
             <div className="flex flex-col items-center justify-center py-4 space-y-3">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-2 h-2 bg-[#00AEEF] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-[#00AEEF] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-[#00AEEF] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 Generating insight...
@@ -252,7 +252,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
           ) : generatedContent && (
             <>
               <div className="mb-2 flex items-center justify-between">
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white">Generated Insight</h4>
+                <h4 className="text-sm font-medium text-gray-900 dark:text-[#00AEEF]">Generated Insight</h4>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   For: {generatedContent.targetAudiences.join(', ')}
                 </div>
@@ -271,10 +271,10 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
           disabled={isGenerating}
           className={`px-4 py-2 text-sm font-medium text-white rounded-lg 
                      transition-colors duration-300 ease-in-out cursor-pointer
-                     focus:outline-none focus:ring-2 focus:ring-blue-500
+                     focus:outline-none focus:ring-2 focus:ring-[#00AEEF]
                      ${isGenerating 
-                       ? 'bg-blue-400 cursor-not-allowed' 
-                       : 'bg-blue-600 hover:bg-blue-700'}`}
+                       ? 'bg-[#00AEEF]/60 cursor-not-allowed' 
+                       : 'bg-[#00AEEF] hover:bg-[#EC008C]'}`}
           data-testid="generate-insight-button"
           type="button"
           role="button"

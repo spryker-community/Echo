@@ -1,47 +1,26 @@
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { SourceProvider } from './context/SourceContext';
-import { ThemeProvider } from './providers/ThemeProvider';
-import { HiddenProvider } from './context/HiddenContext';
-import { Toaster } from './components/ui/toaster';
-import { FeedViewer } from './components/FeedViewer';
-import { SourceFilter } from './components/SourceFilter';
+import { SourceFilter } from './components/source-filter';
 import { ThemeToggle } from './components/ThemeToggle';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { FeedViewer } from './components/FeedViewer';
+import { Toaster } from './components/ui/toaster';
 
-const queryClient = new QueryClient();
-
-function App() {
+export default function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <SourceProvider>
-            <HiddenProvider>
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-                <div className="max-w-4xl mx-auto px-4 py-8">
-                  <header className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-3">
-                      <img src="/images/commercequest.png" alt="Logo" className="w-8 h-8" />
-                      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        Community Echo
-                      </h1>
-                    </div>
-                    <ThemeToggle />
-                  </header>
-                  <main className="space-y-8">
-                    <SourceFilter />
-                    <FeedViewer />
-                  </main>
-                </div>
-              </div>
-              <Toaster />
-            </HiddenProvider>
-          </SourceProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <div className="min-h-screen bg-gray-100 dark:bg-[#011427] transition-colors">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <header className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-2">
+            <img src="/images/commercequest.png" alt="Logo" className="w-8 h-8" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Community Echo</h1>
+          </div>
+          <ThemeToggle />
+        </header>
+        <main className="space-y-8">
+          <SourceFilter />
+          <FeedViewer />
+        </main>
+      </div>
+      <Toaster />
+    </div>
   );
 }
-
-export default App;
