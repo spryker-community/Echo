@@ -2,6 +2,67 @@ import { useMutation } from '@tanstack/react-query';
 import { ContentItem, GeneratedPost } from '../types';
 import { fetchDiscussionComments } from '../lib/api/forum';
 import { useToast } from './useToast';
+import { PROHIBITED_PHRASES, isContentProhibited } from '../config/prohibited-phrases';
+
+// YouTube-specific content analysis helpers
+function extractVideoKeywords(title: string, description: string): string[] {
+  const keywords = new Set<string>();
+  const combinedText = `${title} ${description}`.toLowerCase();
+  
+  const techKeywords = [
+    'tutorial', 'guide', 'how to', 'review', 'explained', 
+    'introduction', 'deep dive', 'overview', 'tips', 'tricks', 
+    'best practices', 'advanced', 'beginner', 'intermediate'
+  ];
+
+  const domainKeywords = [
+    'programming', 'software', 'development', 'tech', 'coding', 
+    'web', 'mobile', 'cloud', 'ai', 'machine learning', 
+    'data science', 'cybersecurity', 'blockchain'
+  ];
+
+  techKeywords.forEach(keyword => {
+    if (combinedText.includes(keyword)) keywords.add(keyword);
+  });
+
+  domainKeywords.forEach(keyword => {
+    if (combinedText.includes(keyword)) keywords.add(keyword);
+  });
+
+  return Array.from(keywords);
+}
+
+function analyzeVideoContent(title: string, description: string): { 
+  contentType: string, 
+  complexity: 'beginner' | 'intermediate' | 'advanced',
+  keywords: string[]
+} {
+  const keywords = extractVideoKeywords(title, description);
+
+  let complexity: 'beginner' | 'intermediate' | 'advanced' = 'beginner';
+  if (keywords.includes('advanced')) complexity = 'advanced';
+  else if (keywords.includes('intermediate')) complexity = 'intermediate';
+
+  const contentType = keywords.includes('tutorial') ? 'Tutorial' :
+                      keywords.includes('review') ? 'Review' :
+                      keywords.includes('guide') ? 'Guide' : 
+                      'Informational';
+
+  return { contentType, complexity, keywords };
+}
+
+function getYouTubeMessageDirective(analysis: ReturnType<typeof analyzeVideoContent>): string {
+  switch (analysis.contentType) {
+    case 'Tutorial':
+      return `Provide a comprehensive summary of this ${analysis.complexity} level tutorial. Highlight key learning points, technical details, and practical applications.`;
+    case 'Review':
+      return `Analyze this video review, focusing on technical insights, pros and cons, and potential relevance to professional contexts.`;
+    case 'Guide':
+      return `Break down this ${analysis.complexity} level guide. Extract actionable insights, best practices, and critical takeaways.`;
+    default:
+      return `Generate an informative summary of this video content, emphasizing technical relevance and potential professional applications.`;
+  }
+}
 
 function getMessageDirective(status: 'open' | 'in_progress' | 'solved' | undefined, isQuestion: boolean): string {
   if (!isQuestion) return 'Provide an informative summary of this discussion.';
@@ -78,10 +139,18 @@ async function generateMessageForItem(item: ContentItem): Promise<GeneratedPost>
       }
     }
   } else if (item.source === 'youtube') {
-    // For YouTube videos, include title and description
+    // Enhanced YouTube video handling
+    const videoAnalysis = analyzeVideoContent(item.title, item.description);
+    
     fullContent = `Video Title: ${item.title}\n\nDescription:\n${item.description}`;
-    context = 'YouTube Video';
-    directive = 'Provide an informative summary of this video content, focusing on technical details and key learnings that would be valuable for the team.';
+    context = `YouTube ${videoAnalysis.contentType} Video`;
+    directive = getYouTubeMessageDirective(videoAnalysis);
+
+    // Add video-specific metadata
+    fullContent += `\n\nAdditional Context:\n` +
+      `Content Type: ${videoAnalysis.contentType}\n` +
+      `Complexity Level: ${videoAnalysis.complexity}\n` +
+      `Key Topics: ${videoAnalysis.keywords.join(', ')}`;
   }
 
   // Add metadata context
@@ -106,12 +175,17 @@ async function generateMessageForItem(item: ContentItem): Promise<GeneratedPost>
   const metadataString = metadata.filter(Boolean).join('\n');
   const prompt = `${context}\n\nMetadata:\n${metadataString}\n\nDirective:\n${directive}\n\nContent:\n${fullContent}`;
 
-  console.log('[Message Generation] Preparing prompt:', {
-    context,
-    directive,
-    contentLength: fullContent.length,
-    hasComments: item.source === 'vanilla-forum' && item.metadata.countComments > 0
-  });
+  // Detailed prohibited phrase checking with verbose logging
+  console.log('[Message Generation] Checking for prohibited phrases');
+  const prohibitedPhrasesFound = PROHIBITED_PHRASES.filter(phrase => 
+    prompt.toLowerCase().includes(phrase.toLowerCase())
+  );
+
+  if (prohibitedPhrasesFound.length > 0) {
+    console.error('[Message Generation] Prohibited phrases detected:', prohibitedPhrasesFound);
+    console.error('[Message Generation] Full prompt:', prompt);
+    throw new Error(`Content contains prohibited phrases: ${prohibitedPhrasesFound.join(', ')}`);
+  }
 
   // TODO: Replace with actual API call to message generation service
   return new Promise<GeneratedPost>((resolve) => 
@@ -135,7 +209,7 @@ export function useMessageGeneration() {
       console.error('[Message Generation] Error:', error);
       showToast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to generate insight. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to generate message. Please try again.',
         variant: 'destructive',
       });
     },
