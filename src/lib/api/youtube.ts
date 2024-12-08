@@ -35,6 +35,8 @@ interface YouTubeVideo {
   snippet: YouTubeSnippet;
 }
 
+const MAX_RESULTS = 20;
+
 async function fetchYouTubeSearchResults(params: Record<string, string>): Promise<YouTubeVideo[]> {
   const apiKey = import.meta.env.VITE_YOUTUBE_API_TOKEN;
 
@@ -42,21 +44,27 @@ async function fetchYouTubeSearchResults(params: Record<string, string>): Promis
     throw new Error('YouTube API token is missing');
   }
 
+  console.log('[YouTube API] Fetching with params:', {
+    ...params,
+    key: '[REDACTED]'
+  });
+
   const response = await axios.get<{ items: YouTubeVideo[] }>('https://www.googleapis.com/youtube/v3/search', {
     params: {
       key: apiKey,
       part: 'snippet',
       type: 'video',
-      maxResults: '10',
+      maxResults: String(MAX_RESULTS),
       ...params
     }
   });
 
   if (!response.data?.items) {
-    console.warn('YouTube API response missing items:', response.data);
+    console.warn('[YouTube API] Response missing items:', response.data);
     return [];
   }
 
+  console.log(`[YouTube API] Fetched ${response.data.items.length} videos`);
   return response.data.items;
 }
 
@@ -65,18 +73,23 @@ export async function fetchYouTubeChannelVideos(): Promise<ContentItem[]> {
     const channelId = import.meta.env.VITE_YOUTUBE_CHANNEL_ID;
 
     if (!channelId) {
-      console.error('YouTube Channel ID is missing');
+      console.error('[YouTube API] Channel ID is missing');
       throw new Error('YouTube Channel ID is missing');
     }
 
-    console.log('Fetching YouTube videos for channel:', channelId);
+    console.log('[YouTube API] Fetching channel videos:', channelId);
 
     const videos = await fetchYouTubeSearchResults({
       channelId,
       order: 'date'
     });
 
-    return videos.map(video => processYouTubeVideo(video, 'youtube'));
+    const items = videos
+      .slice(0, MAX_RESULTS)
+      .map(video => processYouTubeVideo(video, 'youtube'));
+
+    console.log(`[YouTube API] Processed ${items.length} channel videos`);
+    return items;
   } catch (error) {
     handleYouTubeError(error);
     return [];
@@ -89,21 +102,57 @@ export async function fetchYouTubeKeywordVideos(): Promise<ContentItem[]> {
     const ownChannelId = import.meta.env.VITE_YOUTUBE_CHANNEL_ID;
 
     if (!keywords) {
-      console.error('YouTube search keywords are missing');
+      console.error('[YouTube API] Search keywords are missing');
       throw new Error('YouTube search keywords are missing');
     }
 
-    console.log('Fetching YouTube videos for keywords:', keywords);
+    // Split keywords and create individual searches
+    const keywordList: string[] = keywords.split(',').map((k: string) => k.trim());
+    console.log('[YouTube API] Using keywords:', keywordList);
 
-    const videos = await fetchYouTubeSearchResults({
-      q: keywords,
-      order: 'relevance'
-    });
+    // Search for each keyword separately
+    const searchPromises = keywordList.map(keyword => 
+      fetchYouTubeSearchResults({
+        q: keyword,
+        order: 'relevance',
+        publishedAfter: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString() // Last year
+      })
+    );
 
-    // Filter out videos from our own channel
-    return videos
-      .filter(video => video.snippet.channelId !== ownChannelId)
-      .map(video => processYouTubeVideo(video, 'youtube-search'));
+    const searchResults = await Promise.all(searchPromises);
+    const allVideos = searchResults.flat();
+    console.log(`[YouTube API] Total videos fetched: ${allVideos.length}`);
+
+    // Remove duplicates and exclude own channel
+    const seenIds = new Set<string>();
+    const filteredVideos = allVideos
+      .filter(video => {
+        // Skip if we've seen this video
+        if (seenIds.has(video.id.videoId)) {
+          console.log('[YouTube API] Skipping duplicate video:', video.snippet.title);
+          return false;
+        }
+        seenIds.add(video.id.videoId);
+
+        // Skip if it's from our channel
+        if (video.snippet.channelId === ownChannelId) {
+          console.log('[YouTube API] Excluding own video:', video.snippet.title);
+          return false;
+        }
+
+        console.log('[YouTube API] Including video:', {
+          title: video.snippet.title,
+          channel: video.snippet.channelTitle
+        });
+        return true;
+      })
+      .slice(0, MAX_RESULTS); // Limit to max results after filtering
+
+    console.log(`[YouTube API] Found ${filteredVideos.length} videos`);
+
+    const items = filteredVideos.map(video => processYouTubeVideo(video, 'youtube-search'));
+    console.log(`[YouTube API] Processed ${items.length} search videos`);
+    return items;
   } catch (error) {
     handleYouTubeError(error);
     return [];
@@ -111,10 +160,13 @@ export async function fetchYouTubeKeywordVideos(): Promise<ContentItem[]> {
 }
 
 function processYouTubeVideo(video: YouTubeVideo, source: 'youtube' | 'youtube-search'): ContentItem {
-  // Log raw title for debugging
-  console.log('Raw YouTube title:', video.snippet.title);
+  console.log('[YouTube API] Processing video:', {
+    title: video.snippet.title,
+    channel: video.snippet.channelTitle,
+    source
+  });
+
   const decodedTitle = decodeHtmlEntities(video.snippet.title);
-  console.log('Decoded YouTube title:', decodedTitle);
 
   return {
     id: video.id.videoId,
@@ -142,11 +194,11 @@ function handleYouTubeError(error: unknown): never {
     
     // Check for quota exceeded error
     if (youtubeError?.error?.errors?.some(e => e.reason === 'quotaExceeded')) {
-      console.error('YouTube API quota exceeded. Please try again later.');
+      console.error('[YouTube API] Quota exceeded');
       throw new Error('YouTube API quota exceeded. Please try again later.');
     }
 
-    console.error('YouTube API Error:', {
+    console.error('[YouTube API] Error:', {
       status: error.response?.status,
       message: youtubeError?.error?.message || error.message,
       errors: youtubeError?.error?.errors,
@@ -162,6 +214,6 @@ function handleYouTubeError(error: unknown): never {
     throw new Error('Failed to fetch YouTube videos. Please try again later.');
   }
 
-  console.error('Unexpected error fetching YouTube videos:', error);
+  console.error('[YouTube API] Unexpected error:', error);
   throw new Error('An unexpected error occurred while fetching YouTube videos');
 }

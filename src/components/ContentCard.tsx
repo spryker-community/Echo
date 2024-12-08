@@ -16,7 +16,8 @@ interface ContentCardProps {
 export function ContentCard({ item, onGenerate, generatedContent, isGenerating }: ContentCardProps) {
   const sourceIcons: Record<string, string> = {
     'vanilla-forum': '/images/commercequest.png',
-    'youtube': '/images/youtube.svg'
+    'youtube': '/images/youtube.svg',
+    'youtube-search': '/images/youtube.svg'
   };
 
   const getStatusColor = (status: string | undefined) => {
@@ -106,6 +107,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
       }
 
       case 'youtube':
+      case 'youtube-search':
         return (
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <span className="font-medium">{item.metadata.channelTitle}</span>
@@ -117,11 +119,13 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
     }
   };
 
+  const isYouTubeContent = item.source === 'youtube' || item.source === 'youtube-search';
+
   return (
     <Card className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group">
       <CardHeader className="p-6 pb-0">
         <div className="flex items-start gap-4">
-          {item.source === 'youtube' && item.image && (
+          {isYouTubeContent && item.image && (
             <img 
               src={item.image} 
               alt={item.title}

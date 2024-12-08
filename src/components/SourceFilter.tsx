@@ -72,7 +72,7 @@ export function SourceFilter() {
       case 'youtube':
         return 'Our YouTube Channel';
       case 'youtube-search':
-        return 'Related YouTube Content';
+        return 'YouTube Search';
       case 'vanilla-forum':
         return 'Community Forum';
       default:

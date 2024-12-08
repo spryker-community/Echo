@@ -9,6 +9,15 @@ function getYouTubeUrl(): string {
   return `https://www.googleapis.com/youtube/v3/search?channelId=${channelId}`;
 }
 
+function getYouTubeSearchUrl(): string {
+  const keywords = import.meta.env.VITE_YOUTUBE_KEYWORDS;
+  if (!keywords) {
+    console.error('YouTube search keywords are missing');
+    return '';
+  }
+  return `https://www.googleapis.com/youtube/v3/search?q=${encodeURIComponent(keywords)}`;
+}
+
 function getForumUrl(): string {
   const url = import.meta.env.VITE_FORUM_API_URL;
   if (!url) {
@@ -33,4 +42,11 @@ export const defaultSources: SourceConfig[] = [
     apiKey: import.meta.env.VITE_YOUTUBE_API_TOKEN,
     enabled: true,
   },
+  {
+    id: 'youtube-search',
+    type: 'youtube-search',
+    url: getYouTubeSearchUrl(),
+    apiKey: import.meta.env.VITE_YOUTUBE_API_TOKEN,
+    enabled: true,
+  }
 ];
