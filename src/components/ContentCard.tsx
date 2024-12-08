@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/card';
 import { ContentItem } from '../types';
-import { formatDate } from '../lib/utils';
+import { formatDate, formatRelativeTime } from '../lib/utils';
 
 interface ContentCardProps {
   item: ContentItem;
@@ -19,52 +19,111 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
     'youtube': '/images/youtube.svg'
   };
 
-  // Safely check if countComments exists and is a number
-  const commentCount = item.metadata && 'countComments' in item.metadata 
-    ? item.metadata.countComments 
-    : null;
+  const shouldShowImage = item.source === 'youtube' && item.image;
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!isGenerating) {
-      console.log('Generate button clicked for item:', {
-        id: item.id,
-        title: item.title,
-        source: item.source
-      });
-      onGenerate(item);
+  const renderMetadata = () => {
+    switch (item.source) {
+      case 'vanilla-forum': {
+        const { insertUser, categoryName, countComments, dateLastComment } = item.metadata;
+        const hasNewActivity = dateLastComment && new Date(dateLastComment) > new Date(item.date);
+        
+        return (
+          <div className="flex flex-col space-y-1.5">
+            <div className="flex items-center flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400">
+              {insertUser && (
+                <div className="flex items-center gap-1 min-w-0">
+                  {insertUser.photoUrl ? (
+                    <img 
+                      src={insertUser.photoUrl} 
+                      alt={insertUser.name}
+                      className="w-4 h-4 rounded-full flex-shrink-0"
+                    />
+                  ) : (
+                    <span className="flex-shrink-0">👤</span>
+                  )}
+                  <a 
+                    href={insertUser.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline truncate"
+                  >
+                    {insertUser.name}
+                  </a>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
+                <a 
+                  href={item.metadata.categoryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  {categoryName}
+                </a>
+                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
+                <span>{countComments} comments</span>
+              </div>
+            </div>
+            {hasNewActivity && (
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
+                <span className="text-xs text-blue-500 font-medium">
+                  Updated {formatRelativeTime(dateLastComment)}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      case 'youtube':
+        return (
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <span className="font-medium">{item.metadata.channelTitle}</span>
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
   return (
-    <Card className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl">
+    <Card className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group">
       <CardHeader className="p-6 pb-0">
-        <div className="flex items-start space-x-4">
-          {item.image && (
+        <div className="flex items-start gap-4">
+          {shouldShowImage && (
             <img 
               src={item.image} 
               alt={item.title}
-              className="w-20 h-20 object-cover rounded-lg shadow-md group-hover:scale-105 transition-transform"
+              className="w-20 h-20 object-cover rounded-lg shadow-md group-hover:scale-105 transition-transform flex-shrink-0"
             />
           )}
-          <div className="flex-grow">
-            <div className="flex items-center space-x-2 mb-1">
+          <div className="flex-grow min-w-0">
+            <div className="flex items-center gap-2 mb-1.5">
               <img 
                 src={sourceIcons[item.source]} 
                 alt={item.source}
-                className="w-5 h-5 object-contain"
+                className="w-5 h-5 object-contain flex-shrink-0"
               />
-              <CardTitle className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
-                {item.title}
+              <CardTitle className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors truncate">
+                <a 
+                  href={item.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  {item.title}
+                </a>
               </CardTitle>
             </div>
-            <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-              {formatDate(item.date)}
-              {commentCount !== null && commentCount !== undefined && (
-                <span className="ml-2">• {String(commentCount)} comments</span>
-              )}
-            </CardDescription>
+            <div className="space-y-1.5">
+              <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
+                {formatDate(item.date)}
+              </CardDescription>
+              {renderMetadata()}
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -105,7 +164,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
 
       <CardFooter className="p-6 pt-0 flex justify-end">
         <button
-          onClick={handleClick}
+          onClick={() => onGenerate(item)}
           disabled={isGenerating}
           className={`px-4 py-2 text-sm font-medium text-white rounded-lg 
                      transition-colors duration-300 ease-in-out cursor-pointer
