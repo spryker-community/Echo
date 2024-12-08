@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { ContentItem } from '../../types';
+import { decodeHtmlEntities } from '../utils';
 
 interface YouTubeApiError {
   error?: {
@@ -11,6 +12,26 @@ interface YouTubeApiError {
       reason: string;
     }>;
   };
+}
+
+interface YouTubeSnippet {
+  title: string;
+  description: string;
+  publishedAt: string;
+  channelTitle: string;
+  thumbnails: {
+    default?: { url: string };
+    medium?: { url: string };
+    high?: { url: string };
+    maxres?: { url: string };
+  };
+}
+
+interface YouTubeVideo {
+  id: {
+    videoId: string;
+  };
+  snippet: YouTubeSnippet;
 }
 
 export async function fetchYouTubeVideos(): Promise<ContentItem[]> {
@@ -28,7 +49,7 @@ export async function fetchYouTubeVideos(): Promise<ContentItem[]> {
 
     console.log('Fetching YouTube videos for channel:', channelId);
 
-    const response = await axios.get<any>('https://www.googleapis.com/youtube/v3/search', {
+    const response = await axios.get<{ items: YouTubeVideo[] }>('https://www.googleapis.com/youtube/v3/search', {
       params: {
         key: apiKey,
         channelId: channelId,
@@ -44,23 +65,31 @@ export async function fetchYouTubeVideos(): Promise<ContentItem[]> {
       return [];
     }
 
-    return response.data.items.map((video: any) => ({
-      id: video.id.videoId,
-      source: 'youtube',
-      type: 'youtube',
-      title: video.snippet.title,
-      description: video.snippet.description,
-      url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
-      date: video.snippet.publishedAt,
-      image: video.snippet.thumbnails?.maxres?.url || 
-             video.snippet.thumbnails?.high?.url || 
-             video.snippet.thumbnails?.medium?.url || 
-             video.snippet.thumbnails?.default?.url,
-      metadata: {
-        channelTitle: video.snippet.channelTitle,
-        thumbnails: video.snippet.thumbnails,
-      },
-    }));
+    return response.data.items.map((video) => {
+      // Log raw title for debugging
+      console.log('Raw YouTube title:', video.snippet.title);
+      
+      const decodedTitle = decodeHtmlEntities(video.snippet.title);
+      console.log('Decoded YouTube title:', decodedTitle);
+
+      return {
+        id: video.id.videoId,
+        source: 'youtube',
+        type: 'youtube',
+        title: decodedTitle,
+        description: decodeHtmlEntities(video.snippet.description),
+        url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
+        date: video.snippet.publishedAt,
+        image: video.snippet.thumbnails?.maxres?.url || 
+               video.snippet.thumbnails?.high?.url || 
+               video.snippet.thumbnails?.medium?.url || 
+               video.snippet.thumbnails?.default?.url,
+        metadata: {
+          channelTitle: decodeHtmlEntities(video.snippet.channelTitle),
+          thumbnails: video.snippet.thumbnails,
+        },
+      };
+    });
   } catch (error) {
     if (error instanceof AxiosError) {
       const youtubeError = error.response?.data as YouTubeApiError;

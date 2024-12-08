@@ -19,9 +19,15 @@ interface FeedViewerProps {
 
 export function FeedViewer({ onGenerate, generatedMessage, generatingForItem }: FeedViewerProps) {
   const items = useContentItems();
-  const { error: youtubeError } = useYouTubeVideos();
-  const { error: forumError } = useForumPosts();
   const { sources } = useSources();
+  
+  // Only enable APIs when their source is enabled
+  const forumEnabled = sources.find(s => s.id === 'vanilla-forum')?.enabled ?? false;
+  const youtubeEnabled = sources.find(s => s.id === 'youtube')?.enabled ?? false;
+  
+  // Pass enabled state to hooks to control fetching
+  const { error: youtubeError, isLoading: youtubeLoading } = useYouTubeVideos(youtubeEnabled);
+  const { error: forumError, isLoading: forumLoading } = useForumPosts(forumEnabled);
 
   const getNoContentMessage = () => {
     const enabledSources = sources.filter(s => s.enabled);
@@ -30,6 +36,14 @@ export function FeedViewer({ onGenerate, generatedMessage, generatingForItem }: 
       return {
         title: 'No Sources Selected',
         description: 'Enable content sources above to view items.'
+      };
+    }
+
+    // Show loading state when any enabled source is loading
+    if ((youtubeEnabled && youtubeLoading) || (forumEnabled && forumLoading)) {
+      return {
+        title: 'Loading Content',
+        description: 'Fetching content from selected sources...'
       };
     }
 
@@ -50,11 +64,21 @@ export function FeedViewer({ onGenerate, generatedMessage, generatingForItem }: 
       };
     }
 
+    if (items.length === 0 && enabledSources.length > 0) {
+      return {
+        title: 'No Content Available',
+        description: 'No content found from the selected sources. Try enabling more sources or refreshing the content.'
+      };
+    }
+
     return {
       title: 'No Content Available',
       description: 'Select sources above or check your connection to view content.'
     };
   };
+
+  // Show loading skeleton when any enabled source is loading
+  const isLoading = (youtubeEnabled && youtubeLoading) || (forumEnabled && forumLoading);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -62,7 +86,24 @@ export function FeedViewer({ onGenerate, generatedMessage, generatingForItem }: 
         <SourceFilter />
       </div>
       
-      {items.length > 0 ? (
+      {isLoading ? (
+        <div className="space-y-6">
+          {[1, 2, 3].map((n) => (
+            <div 
+              key={n}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 animate-pulse"
+            >
+              <div className="flex space-x-4">
+                <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div className="flex-1 space-y-4">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : items.length > 0 ? (
         <div className="space-y-6">
           {items.map((item) => (
             <div 

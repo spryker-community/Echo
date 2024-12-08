@@ -1,14 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { useSources } from '../context/SourceContext';
 import { useYouTubeVideos } from '../hooks/useYouTubeVideos';
 import { useForumPosts } from '../hooks/useForumPosts';
+import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '../hooks/useToast';
 
 export function SourceFilter() {
   const { sources, toggleSource } = useSources();
-  const { data: youtubeVideos, error: youtubeError } = useYouTubeVideos();
-  const { data: forumPosts, error: forumError } = useForumPosts();
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Pass false to prevent initial fetch, we'll only use the cached data here
+  const { data: youtubeVideos, error: youtubeError } = useYouTubeVideos(false);
+  const { data: forumPosts, error: forumError } = useForumPosts(false);
+
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      
+      // Invalidate both queries to force a refresh
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['youtubeVideos'] }),
+        queryClient.invalidateQueries({ queryKey: ['forumPosts'] })
+      ]);
+
+      showToast({
+        title: 'Sources Refreshed',
+        description: 'Content has been updated from all sources.',
+      });
+    } catch (error) {
+      showToast({
+        title: 'Refresh Failed',
+        description: 'Failed to refresh content. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const getSourceStatus = (sourceId: string) => {
     if (sourceId === 'youtube') {
@@ -68,9 +100,23 @@ export function SourceFilter() {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Content Sources
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Content Sources
+        </h2>
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors duration-200
+                     ${isRefreshing 
+                       ? 'text-gray-400 border-gray-400 cursor-not-allowed'
+                       : 'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                     } border`}
+          aria-label="Refresh sources"
+        >
+          {isRefreshing ? 'Refreshing...' : 'Refresh Sources'}
+        </button>
+      </div>
       <div className="space-y-4">
         {sources.map((source) => (
           <div

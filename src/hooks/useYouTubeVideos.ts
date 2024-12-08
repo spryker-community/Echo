@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchYouTubeVideos } from '../lib/api/youtube';
 import { useToast } from './useToast';
 
-export function useYouTubeVideos() {
+export function useYouTubeVideos(enabled: boolean = false) {
   const { showToast } = useToast();
 
   return useQuery({
@@ -13,7 +13,6 @@ export function useYouTubeVideos() {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         
-        // Check for quota exceeded error
         if (errorMessage.includes('quota exceeded')) {
           showToast({
             title: 'YouTube API Limit Reached',
@@ -28,34 +27,18 @@ export function useYouTubeVideos() {
           });
         }
 
-        // Log the error for debugging
         console.error('YouTube API Error:', {
           message: errorMessage,
           timestamp: new Date().toISOString(),
         });
 
-        // Return empty array to prevent app from breaking
         return [];
       }
     },
-    refetchInterval: 15 * 60 * 1000, // Refetch every 15 minutes
-    retry: (failureCount, error) => {
-      // Don't retry if quota is exceeded
-      if (error instanceof Error && error.message.includes('quota exceeded')) {
-        return false;
-      }
-      // Retry other errors up to 2 times
-      return failureCount < 2;
-    },
-    retryDelay: 1000,
-    staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
-    // Disable background refetching when quota is exceeded
-    refetchOnWindowFocus: (query) => {
-      if (query.state.error instanceof Error && 
-          query.state.error.message.includes('quota exceeded')) {
-        return false;
-      }
-      return true;
-    }
+    enabled: enabled, // Only fetch when enabled
+    staleTime: Infinity, // Keep data fresh forever until manual refresh
+    gcTime: 24 * 60 * 60 * 1000, // Cache for 24 hours (renamed from cacheTime in v5)
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchOnMount: false, // Don't refetch on mount
   });
 }
