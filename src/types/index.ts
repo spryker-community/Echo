@@ -49,6 +49,15 @@ interface BlueSkyMetadata {
   };
   hasImages: boolean;
   imageCount: number;
+  threadContext?: {
+    parentPost?: {
+      text: string;
+      author: {
+        handle: string;
+        displayName?: string;
+      };
+    };
+  };
 }
 
 interface ForumContentItem extends BaseContentItem {
