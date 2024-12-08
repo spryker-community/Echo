@@ -175,13 +175,13 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
           data-testid="generate-insight-button"
           type="button"
           role="button"
-          aria-label={isGenerating ? 'Generating insight' : 'Generate insight'}
+          aria-label={isGenerating ? 'Generating post' : 'Generate post'}
         >
           {isGenerating 
             ? 'Generating...' 
             : generatedContent 
-              ? 'Regenerate Insight' 
-              : 'Generate Insight'}
+              ? 'Regenerate AI Post' 
+              : 'Generate AI Post'}
         </button>
       </CardFooter>
     </Card>
