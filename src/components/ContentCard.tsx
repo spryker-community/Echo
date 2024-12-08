@@ -2,6 +2,9 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/card';
 import { ContentItem } from '../types';
 import { formatDate, formatRelativeTime } from '../lib/utils';
+import { useHidden } from '../context/HiddenContext';
+import { X } from 'lucide-react';
+import { useToast } from '../hooks/useToast';
 
 interface ContentCardProps {
   item: ContentItem;
@@ -14,11 +17,22 @@ interface ContentCardProps {
 }
 
 export function ContentCard({ item, onGenerate, generatedContent, isGenerating }: ContentCardProps) {
+  const { hidePost } = useHidden();
+  const { showToast } = useToast();
+  
   const sourceIcons: Record<string, string> = {
     'vanilla-forum': '/images/commercequest.png',
     'youtube': '/images/youtube.svg',
     'youtube-search': '/images/youtube.svg',
     'bluesky': '/images/bluesky.svg'
+  };
+
+  const handleHide = () => {
+    hidePost(item.id);
+    showToast({
+      title: "Post Hidden",
+      description: "You can restore hidden posts using the 'Show Hidden' button.",
+    });
   };
 
   const getStatusColor = (status: string | undefined) => {
@@ -157,7 +171,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
     <Card className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group">
       <CardHeader className="p-6 pb-0">
         <div className="flex items-start gap-4">
-          {(isYouTubeContent || (item.source === 'bluesky' && item.image)) && (
+          {isYouTubeContent && item.image && (
             <img 
               src={item.image} 
               alt={item.title}
@@ -165,22 +179,33 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
             />
           )}
           <div className="flex-grow min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              <img 
-                src={sourceIcons[item.source]} 
-                alt={item.source}
-                className="w-5 h-5 object-contain flex-shrink-0"
-              />
-              <CardTitle className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors truncate">
-                <a 
-                  href={item.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  {item.title}
-                </a>
-              </CardTitle>
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <img 
+                  src={sourceIcons[item.source]} 
+                  alt={item.source}
+                  className="w-5 h-5 object-contain flex-shrink-0"
+                />
+                <CardTitle className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors truncate">
+                  <a 
+                    href={item.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:underline"
+                  >
+                    {item.title}
+                  </a>
+                </CardTitle>
+              </div>
+              <button
+                onClick={handleHide}
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 
+                         rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                         opacity-0 group-hover:opacity-100 focus:opacity-100"
+                title="Hide post"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
             <div className="space-y-1.5">
               <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
@@ -239,13 +264,13 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
           data-testid="generate-insight-button"
           type="button"
           role="button"
-          aria-label={isGenerating ? 'Generating message' : 'Generate message'}
+          aria-label={isGenerating ? 'Generating insight' : 'Generate insight'}
         >
           {isGenerating 
             ? 'Generating...' 
             : generatedContent 
-              ? 'Regenerate Message' 
-              : 'Generate Message'}
+              ? 'Regenerate Insight' 
+              : 'Generate Insight'}
         </button>
       </CardFooter>
     </Card>

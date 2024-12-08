@@ -7,11 +7,14 @@ import { useForumPosts } from '../hooks/useForumPosts';
 import { useBlueSkyPosts } from '../hooks/useBlueSkyPosts';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../hooks/useToast';
+import { useHidden } from '../context/HiddenContext';
+import { Eye, RefreshCw } from 'lucide-react';
 
 export function SourceFilter() {
   const { sources, toggleSource } = useSources();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { hiddenCount, unhideAll } = useHidden();
   
   // Pass false to prevent initial fetch, we'll only use the cached data here
   const { data: youtubeVideos, error: youtubeError } = useYouTubeVideos(false, 'youtube');
@@ -43,6 +46,14 @@ export function SourceFilter() {
         variant: "destructive"
       });
     }
+  };
+
+  const handleUnhideAll = () => {
+    unhideAll();
+    showToast({
+      title: "Posts Unhidden",
+      description: `${hiddenCount} posts have been restored.`
+    });
   };
 
   const getSourceStatus = (sourceId: string) => {
@@ -142,17 +153,34 @@ export function SourceFilter() {
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
           Content Sources
         </h2>
-        <button
-          onClick={handleRefresh}
-          className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 
-                   dark:text-blue-400 dark:hover:text-blue-300 
-                   border border-blue-600 dark:border-blue-400 rounded-lg 
-                   hover:bg-blue-50 dark:hover:bg-blue-900/20 
-                   transition-colors duration-200"
-          aria-label="Refresh sources"
-        >
-          Refresh Sources
-        </button>
+        <div className="flex items-center gap-2">
+          {hiddenCount > 0 && (
+            <button
+              onClick={handleUnhideAll}
+              className="flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 
+                       dark:text-blue-400 dark:hover:text-blue-300 
+                       border border-blue-600 dark:border-blue-400 rounded-lg 
+                       hover:bg-blue-50 dark:hover:bg-blue-900/20 
+                       transition-colors duration-200"
+              aria-label={`Show ${hiddenCount} hidden posts`}
+            >
+              <Eye className="w-4 h-4" />
+              <span>Show Hidden ({hiddenCount})</span>
+            </button>
+          )}
+          <button
+            onClick={handleRefresh}
+            className="flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 
+                     dark:text-blue-400 dark:hover:text-blue-300 
+                     border border-blue-600 dark:border-blue-400 rounded-lg 
+                     hover:bg-blue-50 dark:hover:bg-blue-900/20 
+                     transition-colors duration-200"
+            aria-label="Refresh sources"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh Sources</span>
+          </button>
+        </div>
       </div>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
         Showing the 20-30 most recent items from each source. Use the toggles to filter content.
