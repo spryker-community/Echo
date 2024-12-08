@@ -13,6 +13,9 @@ interface ForumUser {
   url: string;
 }
 
+export type DiscussionStatus = 'open' | 'in_progress' | 'solved';
+export type DiscussionType = 'question' | 'discussion';
+
 interface ForumMetadata {
   categoryID: number;
   categoryName: string;
@@ -23,6 +26,8 @@ interface ForumMetadata {
   dateLastComment?: string;
   insertUser?: ForumUser;
   lastUser?: ForumUser;
+  status?: DiscussionStatus;
+  type?: DiscussionType;
 }
 
 interface YouTubeMetadata {

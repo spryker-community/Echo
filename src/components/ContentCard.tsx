@@ -19,16 +19,36 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
     'youtube': '/images/youtube.svg'
   };
 
-  const shouldShowImage = item.source === 'youtube' && item.image;
+  const getStatusColor = (status: string | undefined) => {
+    switch (status) {
+      case 'solved':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      case 'in_progress':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+      default:
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+    }
+  };
+
+  const getStatusLabel = (status: string | undefined) => {
+    switch (status) {
+      case 'solved':
+        return 'Solved';
+      case 'in_progress':
+        return 'In Progress';
+      default:
+        return 'Open';
+    }
+  };
 
   const renderMetadata = () => {
     switch (item.source) {
       case 'vanilla-forum': {
-        const { insertUser, categoryName, countComments, dateLastComment } = item.metadata;
+        const { insertUser, categoryName, countComments, dateLastComment, status, type } = item.metadata;
         const hasNewActivity = dateLastComment && new Date(dateLastComment) > new Date(item.date);
         
         return (
-          <div className="flex flex-col space-y-1.5">
+          <div className="flex flex-col space-y-2">
             <div className="flex items-center flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400">
               {insertUser && (
                 <div className="flex items-center gap-1 min-w-0">
@@ -64,6 +84,14 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
                 <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
                 <span>{countComments} comments</span>
               </div>
+              {type === 'question' && (
+                <>
+                  <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
+                    {getStatusLabel(status)}
+                  </span>
+                </>
+              )}
             </div>
             {hasNewActivity && (
               <div className="flex items-center gap-2">
@@ -93,7 +121,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
     <Card className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group">
       <CardHeader className="p-6 pb-0">
         <div className="flex items-start gap-4">
-          {shouldShowImage && (
+          {item.source === 'youtube' && item.image && (
             <img 
               src={item.image} 
               alt={item.title}
@@ -175,13 +203,13 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
           data-testid="generate-insight-button"
           type="button"
           role="button"
-          aria-label={isGenerating ? 'Generating post' : 'Generate post'}
+          aria-label={isGenerating ? 'Generating insight' : 'Generate insight'}
         >
           {isGenerating 
             ? 'Generating...' 
             : generatedContent 
-              ? 'Regenerate AI Post' 
-              : 'Generate AI Post'}
+              ? 'Regenerate Insight' 
+              : 'Generate Insight'}
         </button>
       </CardFooter>
     </Card>

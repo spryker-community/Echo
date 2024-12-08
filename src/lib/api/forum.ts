@@ -1,74 +1,151 @@
 import axios from 'axios';
-import { ContentItem } from '../../types';
+import { decodeHtmlEntities } from '../utils';
+import type { DiscussionStatus, DiscussionType } from '../../types';
 
-const forumApi = axios.create({
-  baseURL: import.meta.env.VITE_FORUM_API_URL,
-  headers: {
-    'Authorization': `Bearer ${import.meta.env.VITE_FORUM_API_KEY}`,
-    'Content-Type': 'application/json',
-  },
-});
+interface ForumUser {
+  name: string;
+  photoUrl?: string;
+}
 
-export async function fetchForumPosts(): Promise<ContentItem[]> {
+interface ForumComment {
+  commentID: string;
+  discussionID: string;
+  body: string;
+  dateInserted: string;
+  insertUser: ForumUser;
+}
+
+interface ForumDiscussion {
+  discussionID: string;
+  name: string;
+  body: string;
+  dateInserted: string;
+  dateLastComment?: string;
+  categoryID: number;
+  score: number;
+  countComments: number;
+  insertUser: ForumUser;
+  status?: DiscussionStatus;
+  type?: DiscussionType;
+  solved?: boolean;
+  inProgress?: boolean;
+  attributes?: {
+    status?: string;
+    type?: string;
+  };
+}
+
+export function determineDiscussionStatus(discussion: ForumDiscussion): DiscussionStatus {
+  // First check explicit status
+  if (discussion.status) return discussion.status;
+  
+  // Then check attributes
+  if (discussion.attributes?.status === 'solved') return 'solved';
+  if (discussion.attributes?.status === 'in_progress') return 'in_progress';
+  
+  // Then check boolean flags
+  if (discussion.solved) return 'solved';
+  if (discussion.inProgress) return 'in_progress';
+  
+  // Default to open
+  return 'open';
+}
+
+export function determineDiscussionType(discussion: ForumDiscussion): DiscussionType {
+  // First check explicit type
+  if (discussion.type) return discussion.type;
+  
+  // Then check attributes
+  if (discussion.attributes?.type === 'question') return 'question';
+  
+  // Check title for question indicators
+  const questionIndicators = [
+    '?',
+    'how to',
+    'how do',
+    'what is',
+    'what are',
+    'why does',
+    'can i',
+    'possible to',
+    'help with',
+    'issue with',
+    'problem with',
+    'error',
+    'trouble',
+    'stuck',
+    'not working',
+    'failed',
+    'unable to'
+  ];
+
+  const titleLower = discussion.name.toLowerCase();
+  return questionIndicators.some(indicator => titleLower.includes(indicator)) ? 'question' : 'discussion';
+}
+
+export async function fetchDiscussionComments(discussionId: string): Promise<ForumComment[]> {
   try {
-    console.log('[FORUM API] Fetching forum posts with URL:', import.meta.env.VITE_FORUM_API_URL);
-    const response = await forumApi.get('/api/v2/discussions');
+    console.log('[FORUM API] Fetching comments for discussion:', discussionId);
     
-    console.log('[FORUM API] Raw Response:', JSON.stringify({
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers,
-      dataType: typeof response.data,
-      dataKeys: Object.keys(response.data || {}),
-      firstItemKeys: response.data && response.data.length > 0 ? Object.keys(response.data[0]) : 'No items'
-    }, null, 2));
-
-    // Ensure we're processing the correct part of the response
-    const discussions = response.data || [];
-
-    console.log(`[FORUM API] Number of discussions: ${discussions.length}`);
-
-    const processedPosts = discussions.map((post: any): ContentItem => {
-      const processedPost = {
-        id: post.discussionID.toString(),
-        source: 'vanilla-forum',
-        type: 'forum' as const,
-        title: post.name,
-        description: post.body?.replace(/<[^>]*>/g, '').slice(0, 200) + '...', // Strip HTML and limit length
-        url: `${import.meta.env.VITE_FORUM_API_URL}/discussion/${post.discussionID}`,
-        date: post.dateInserted,
-        image: post.image?.url,
-        metadata: {
-          categoryID: post.categoryID,
-          score: post.score,
-          countComments: post.countComments,
-        },
-      };
-
-      console.log('[FORUM API] Processed Post:', JSON.stringify(processedPost, null, 2));
-      return processedPost;
-    });
-
-    return processedPosts;
-  } catch (error) {
-    console.log('[FORUM API] Error fetching forum posts:', error);
-    if (axios.isAxiosError(error)) {
-      console.log('[FORUM API] Detailed Error:', JSON.stringify({
-        data: error.response?.data,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        headers: error.response?.headers,
-        config: {
-          url: error.config?.url,
-          baseURL: error.config?.baseURL,
-          params: error.config?.params,
-          headers: {
-            ...error.config?.headers,
-            'Authorization': '[REDACTED]'
-          }
+    const response = await axios.get<ForumComment[]>(
+      `${import.meta.env.VITE_FORUM_API_URL}/api/v2/discussions/${discussionId}/comments`,
+      {
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_FORUM_API_KEY}`
         }
-      }, null, 2));
-    }
+      }
+    );
+
+    const comments = response.data;
+    console.log(`[FORUM API] Fetched ${comments.length} comments for discussion ${discussionId}`);
+
+    return comments.map(comment => ({
+      ...comment,
+      body: decodeHtmlEntities(comment.body?.replace(/<[^>]*>/g, '') || '')
+    }));
+  } catch (error) {
+    console.error('[FORUM API] Error fetching comments:', error);
+    throw error;
+  }
+}
+
+export async function fetchDiscussions(): Promise<ForumDiscussion[]> {
+  try {
+    console.log('[FORUM API] Fetching forum discussions');
+    
+    const response = await axios.get<ForumDiscussion[]>(
+      `${import.meta.env.VITE_FORUM_API_URL}/api/v2/discussions`,
+      {
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_FORUM_API_KEY}`
+        }
+      }
+    );
+
+    const discussions = response.data;
+    console.log(`[FORUM API] Fetched ${discussions.length} discussions`);
+
+    return discussions.map(discussion => {
+      const status = determineDiscussionStatus(discussion);
+      const type = determineDiscussionType(discussion);
+
+      console.log('[FORUM API] Processed discussion:', {
+        id: discussion.discussionID,
+        title: discussion.name,
+        status,
+        type,
+        comments: discussion.countComments
+      });
+
+      return {
+        ...discussion,
+        body: decodeHtmlEntities(discussion.body?.replace(/<[^>]*>/g, '') || ''),
+        status,
+        type
+      };
+    });
+  } catch (error) {
+    console.error('[FORUM API] Error fetching discussions:', error);
     throw error;
   }
 }
