@@ -5,7 +5,7 @@ Project plan: see /project_briefing.md
 ## MVP Phase (Week 1-2)
 
 ### 1. Basic Forum Integration ✅
-- [ ] Set up Vanilla Forum API client service
+- [x] Set up Vanilla Forum API client service
 - [x] Implement basic content fetching
 - [x] Create data models for forum posts
 - [x] Basic error handling
@@ -52,17 +52,23 @@ Project plan: see /project_briefing.md
 - [ ] Enhance message generation for video content (needs fixing - API errors)
 - [ ] Add video preview capabilities
 
-### 2. RSS Feed Integration ⏳
+### 2. BlueSky Integration ✅
+- [x] Implement BlueSky API client
+- [x] Add post content handling
+- [x] Add thread context support
+- [x] Add proper error handling
+
+### 3. Content Management Features ✅
+- [x] Add post hiding functionality
+- [x] Add bulk unhide capability
+- [x] Add toast notifications
+- [x] Add session persistence
+
+### 4. RSS Feed Integration ⏳
 - [ ] Implement RSS feed parser
 - [ ] Add support for multiple RSS feeds
 - [ ] Enhance message generation for RSS content
 - [ ] Add RSS preview capabilities
-
-### 3. Storage & Performance ✅
-- [x] Implement LocalStorage persistence
-- [x] Add React Query for data caching
-- [x] Optimize content fetching
-- [x] Add pagination/infinite scroll
 
 ## Phase 4 - Polish & Testing (Week 7-8)
 
@@ -89,8 +95,9 @@ Project plan: see /project_briefing.md
 ### API Integration Priority
 1. ✅ Vanilla Forum API (MVP)
 2. ✅ OpenRouter API (MVP)
-3. 🚧 YouTube API (Phase 3)
-4. ⏳ RSS Feeds (Phase 3)
+3. ✅ BlueSky API (Phase 3)
+4. 🚧 YouTube API (Phase 3)
+5. ⏳ RSS Feeds (Phase 3)
 
 ### Data Flow
 ```
@@ -116,12 +123,26 @@ Content Sources → Integration Layer → Content Processing → UI Display → 
 - [x] Copy-paste functionality for generated messages
 - [x] Basic error handling and loading states
 
-## Iterative Development Notes
-- ✅ Start with forum posts only
-- ✅ Add message generation as soon as basic display works
-- ✅ Enhance features based on user feedback
-- 🚧 Add sources one at time
-- ✅ Continuously improve message generation quality
+## Next Immediate Steps
+1. Fix YouTube API integration:
+   - Implement proper error handling for quota limits
+   - Add retry mechanism with exponential backoff
+   - Add proper caching to minimize API calls
+
+2. Implement prohibited phrase filtering:
+   - Create configuration for prohibited phrases
+   - Add filtering logic to message generation
+   - Add UI feedback for filtered content
+
+3. Begin RSS integration:
+   - Research and select RSS parser library
+   - Design RSS feed configuration interface
+   - Plan RSS content processing pipeline
+
+4. Start testing implementation:
+   - Set up testing framework
+   - Begin with utility function tests
+   - Add component tests for core features
 
 Legend:
 ✅ = Completed

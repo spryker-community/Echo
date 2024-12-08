@@ -36,6 +36,41 @@ interface YouTubeVideo {
 }
 
 const MAX_RESULTS = 20;
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+
+function shouldRetry(error: unknown, attempt: number): boolean {
+  if (attempt >= MAX_RETRIES) return false;
+  
+  if (error instanceof AxiosError) {
+    const status = error.response?.status;
+    // Retry on rate limit (429), server errors (5xx), or network errors
+    return status === 429 || (status && status >= 500) || !status;
+  }
+  
+  return false;
+}
+
+async function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry<T>(
+  operation: () => Promise<T>,
+  attempt: number = 1
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (shouldRetry(error, attempt)) {
+      const delay_ms = INITIAL_RETRY_DELAY * Math.pow(2, attempt - 1);
+      console.log(`[YouTube API] Retry attempt ${attempt} after ${delay_ms}ms`);
+      await delay(delay_ms);
+      return fetchWithRetry(operation, attempt + 1);
+    }
+    throw error;
+  }
+}
 
 async function fetchYouTubeSearchResults(params: Record<string, string>): Promise<YouTubeVideo[]> {
   const apiKey = import.meta.env.VITE_YOUTUBE_API_TOKEN;
@@ -49,15 +84,17 @@ async function fetchYouTubeSearchResults(params: Record<string, string>): Promis
     key: '[REDACTED]'
   });
 
-  const response = await axios.get<{ items: YouTubeVideo[] }>('https://www.googleapis.com/youtube/v3/search', {
-    params: {
-      key: apiKey,
-      part: 'snippet',
-      type: 'video',
-      maxResults: String(MAX_RESULTS),
-      ...params
-    }
-  });
+  const response = await fetchWithRetry(() => 
+    axios.get<{ items: YouTubeVideo[] }>('https://www.googleapis.com/youtube/v3/search', {
+      params: {
+        key: apiKey,
+        part: 'snippet',
+        type: 'video',
+        maxResults: String(MAX_RESULTS),
+        ...params
+      }
+    })
+  );
 
   if (!response.data?.items) {
     console.warn('[YouTube API] Response missing items:', response.data);
@@ -111,13 +148,18 @@ export async function fetchYouTubeKeywordVideos(): Promise<ContentItem[]> {
     console.log('[YouTube API] Using keywords:', keywordList);
 
     // Search for each keyword separately
-    const searchPromises = keywordList.map(keyword => 
-      fetchYouTubeSearchResults({
-        q: keyword,
-        order: 'relevance',
-        publishedAfter: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString() // Last year
-      })
-    );
+    const searchPromises = keywordList.map(async keyword => {
+      try {
+        return await fetchYouTubeSearchResults({
+          q: keyword,
+          order: 'relevance',
+          publishedAfter: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString() // Last year
+        });
+      } catch (error) {
+        console.warn(`[YouTube API] Failed to fetch videos for keyword "${keyword}":`, error);
+        return [];
+      }
+    });
 
     const searchResults = await Promise.all(searchPromises);
     const allVideos = searchResults.flat();
@@ -195,7 +237,13 @@ function handleYouTubeError(error: unknown): never {
     // Check for quota exceeded error
     if (youtubeError?.error?.errors?.some(e => e.reason === 'quotaExceeded')) {
       console.error('[YouTube API] Quota exceeded');
-      throw new Error('YouTube API quota exceeded. Please try again later.');
+      throw new Error('YouTube API quota exceeded. Please try again tomorrow.');
+    }
+
+    // Check for rate limiting
+    if (error.response?.status === 429) {
+      console.error('[YouTube API] Rate limited');
+      throw new Error('YouTube API rate limit reached. Please try again later.');
     }
 
     console.error('[YouTube API] Error:', {
