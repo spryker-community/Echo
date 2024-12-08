@@ -9,6 +9,30 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5174,
       strictPort: true,
+      // Add HMR connection timeout
+      hmr: {
+        timeout: 5000,
+      },
+    },
+    // Add build optimizations
+    build: {
+      // Enable minification
+      minify: 'terser',
+      // Enable source maps for production
+      sourcemap: true,
+      // Optimize dependencies
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom'],
+            'query-vendor': ['@tanstack/react-query'],
+          },
+        },
+      },
+    },
+    // Add optimizeDeps configuration
+    optimizeDeps: {
+      include: ['react', 'react-dom', '@tanstack/react-query'],
     },
     define: {
       'process.env.VITE_OPENROUTER_API_KEY': JSON.stringify(env.VITE_OPENROUTER_API_KEY),
@@ -17,6 +41,11 @@ export default defineConfig(({ mode }) => {
       'process.env.VITE_YOUTUBE_CHANNEL_ID': JSON.stringify(env.VITE_YOUTUBE_CHANNEL_ID),
       'process.env.VITE_FORUM_API_URL': JSON.stringify(env.VITE_FORUM_API_URL),
       'process.env.VITE_FORUM_API_KEY': JSON.stringify(env.VITE_FORUM_API_KEY),
+    },
+    // Add esbuild options for better performance
+    esbuild: {
+      target: 'esnext',
+      treeShaking: true,
     },
   };
 });
