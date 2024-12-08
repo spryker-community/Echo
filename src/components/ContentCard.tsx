@@ -17,7 +17,8 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
   const sourceIcons: Record<string, string> = {
     'vanilla-forum': '/images/commercequest.png',
     'youtube': '/images/youtube.svg',
-    'youtube-search': '/images/youtube.svg'
+    'youtube-search': '/images/youtube.svg',
+    'bluesky': '/images/bluesky.svg'
   };
 
   const getStatusColor = (status: string | undefined) => {
@@ -114,6 +115,37 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
           </div>
         );
 
+      case 'bluesky':
+        return (
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-1">
+              {item.metadata.author.avatar ? (
+                <img 
+                  src={item.metadata.author.avatar} 
+                  alt={item.metadata.author.name}
+                  className="w-4 h-4 rounded-full flex-shrink-0"
+                />
+              ) : (
+                <span className="flex-shrink-0">👤</span>
+              )}
+              <a 
+                href={`https://bsky.app/profile/${item.metadata.author.handle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {item.metadata.author.name}
+              </a>
+            </div>
+            {item.metadata.hasImages && (
+              <>
+                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
+                <span>{item.metadata.imageCount} image{item.metadata.imageCount !== 1 ? 's' : ''}</span>
+              </>
+            )}
+          </div>
+        );
+
       default:
         return null;
     }
@@ -125,7 +157,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
     <Card className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group">
       <CardHeader className="p-6 pb-0">
         <div className="flex items-start gap-4">
-          {isYouTubeContent && item.image && (
+          {(isYouTubeContent || (item.source === 'bluesky' && item.image)) && (
             <img 
               src={item.image} 
               alt={item.title}

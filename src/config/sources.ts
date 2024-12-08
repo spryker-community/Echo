@@ -27,6 +27,15 @@ function getForumUrl(): string {
   return url;
 }
 
+function getBlueSkyUrl(): string {
+  const identifier = import.meta.env.VITE_BLUESKY_IDENTIFIER;
+  if (!identifier) {
+    console.error('BlueSky identifier is missing');
+    return '';
+  }
+  return `https://bsky.social/xrpc/app.bsky.feed.searchPosts`;
+}
+
 export const defaultSources: SourceConfig[] = [
   {
     id: 'vanilla-forum',
@@ -47,6 +56,13 @@ export const defaultSources: SourceConfig[] = [
     type: 'youtube-search',
     url: getYouTubeSearchUrl(),
     apiKey: import.meta.env.VITE_YOUTUBE_API_TOKEN,
+    enabled: true,
+  },
+  {
+    id: 'bluesky',
+    type: 'social',
+    url: getBlueSkyUrl(),
+    apiKey: import.meta.env.VITE_BLUESKY_APP_PASSWORD,
     enabled: true,
   }
 ];

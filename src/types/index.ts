@@ -41,6 +41,16 @@ interface YouTubeMetadata {
   };
 }
 
+interface BlueSkyMetadata {
+  author: {
+    name: string;
+    handle: string;
+    avatar?: string;
+  };
+  hasImages: boolean;
+  imageCount: number;
+}
+
 interface ForumContentItem extends BaseContentItem {
   source: 'vanilla-forum';
   type: 'forum';
@@ -51,6 +61,12 @@ interface YouTubeContentItem extends BaseContentItem {
   source: 'youtube' | 'youtube-search';
   type: 'youtube';
   metadata: YouTubeMetadata;
+}
+
+interface BlueSkyContentItem extends BaseContentItem {
+  source: 'bluesky';
+  type: 'social';
+  metadata: BlueSkyMetadata;
 }
 
 interface GitHubContentItem extends BaseContentItem {
@@ -65,7 +81,7 @@ interface RSSContentItem extends BaseContentItem {
   metadata: Record<string, unknown>;
 }
 
-export type ContentItem = ForumContentItem | YouTubeContentItem | GitHubContentItem | RSSContentItem;
+export type ContentItem = ForumContentItem | YouTubeContentItem | GitHubContentItem | RSSContentItem | BlueSkyContentItem;
 
 export interface GeneratedPost {
   content: string;
