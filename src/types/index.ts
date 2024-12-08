@@ -32,6 +32,7 @@ interface ForumMetadata {
 
 interface YouTubeMetadata {
   channelTitle: string;
+  channelId: string;
   thumbnails: {
     default?: { url: string };
     medium?: { url: string };
@@ -47,7 +48,7 @@ interface ForumContentItem extends BaseContentItem {
 }
 
 interface YouTubeContentItem extends BaseContentItem {
-  source: 'youtube';
+  source: 'youtube' | 'youtube-search';
   type: 'youtube';
   metadata: YouTubeMetadata;
 }

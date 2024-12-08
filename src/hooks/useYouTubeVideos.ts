@@ -1,15 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchYouTubeVideos } from '../lib/api/youtube';
+import { fetchYouTubeChannelVideos, fetchYouTubeKeywordVideos } from '../lib/api/youtube';
 import { useToast } from './useToast';
 
-export function useYouTubeVideos(enabled: boolean = false) {
+export function useYouTubeVideos(enabled: boolean = false, type: 'youtube' | 'youtube-search' = 'youtube') {
   const { showToast } = useToast();
 
   return useQuery({
-    queryKey: ['youtubeVideos'],
+    queryKey: ['youtubeVideos', type],
     queryFn: async () => {
       try {
-        return await fetchYouTubeVideos();
+        if (type === 'youtube-search') {
+          return await fetchYouTubeKeywordVideos();
+        } else {
+          return await fetchYouTubeChannelVideos();
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         
@@ -30,15 +34,16 @@ export function useYouTubeVideos(enabled: boolean = false) {
         console.error('YouTube API Error:', {
           message: errorMessage,
           timestamp: new Date().toISOString(),
+          type
         });
 
         return [];
       }
     },
-    enabled: enabled, // Only fetch when enabled
-    staleTime: Infinity, // Keep data fresh forever until manual refresh
-    gcTime: 24 * 60 * 60 * 1000, // Cache for 24 hours (renamed from cacheTime in v5)
-    refetchOnWindowFocus: false, // Don't refetch on window focus
-    refetchOnMount: false, // Don't refetch on mount
+    enabled: enabled,
+    staleTime: Infinity,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }

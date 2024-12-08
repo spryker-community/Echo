@@ -1,45 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { useSources } from '../context/SourceContext';
 import { useYouTubeVideos } from '../hooks/useYouTubeVideos';
 import { useForumPosts } from '../hooks/useForumPosts';
 import { useQueryClient } from '@tanstack/react-query';
-import { useToast } from '../hooks/useToast';
 
 export function SourceFilter() {
   const { sources, toggleSource } = useSources();
   const queryClient = useQueryClient();
-  const { showToast } = useToast();
-  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Pass false to prevent initial fetch, we'll only use the cached data here
-  const { data: youtubeVideos, error: youtubeError } = useYouTubeVideos(false);
+  const { data: youtubeVideos, error: youtubeError } = useYouTubeVideos(false, 'youtube');
+  const { data: youtubeSearchVideos, error: youtubeSearchError } = useYouTubeVideos(false, 'youtube-search');
   const { data: forumPosts, error: forumError } = useForumPosts(false);
 
   const handleRefresh = async () => {
-    try {
-      setIsRefreshing(true);
-      
-      // Invalidate both queries to force a refresh
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['youtubeVideos'] }),
-        queryClient.invalidateQueries({ queryKey: ['forumPosts'] })
-      ]);
-
-      showToast({
-        title: 'Sources Refreshed',
-        description: 'Content has been updated from all sources.',
-      });
-    } catch (error) {
-      showToast({
-        title: 'Refresh Failed',
-        description: 'Failed to refresh content. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsRefreshing(false);
-    }
+    // Invalidate all queries to force a refresh
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['youtubeVideos', 'youtube'] }),
+      queryClient.invalidateQueries({ queryKey: ['youtubeVideos', 'youtube-search'] }),
+      queryClient.invalidateQueries({ queryKey: ['forumPosts'] })
+    ]);
   };
 
   const getSourceStatus = (sourceId: string) => {
@@ -54,6 +36,17 @@ export function SourceFilter() {
       if (!youtubeVideos?.length) return '(No videos)';
       return `(${youtubeVideos.length} videos)`;
     }
+    if (sourceId === 'youtube-search') {
+      if (youtubeSearchError) {
+        const errorMessage = youtubeSearchError instanceof Error ? youtubeSearchError.message : String(youtubeSearchError);
+        if (errorMessage.includes('quota exceeded')) {
+          return '(API Limit Reached)';
+        }
+        return '(Error)';
+      }
+      if (!youtubeSearchVideos?.length) return '(No videos)';
+      return `(${youtubeSearchVideos.length} videos)`;
+    }
     if (sourceId === 'vanilla-forum') {
       if (forumError) return '(Error)';
       if (!forumPosts?.length) return '(No posts)';
@@ -65,6 +58,7 @@ export function SourceFilter() {
   const getSourceIcon = (sourceId: string) => {
     switch (sourceId) {
       case 'youtube':
+      case 'youtube-search':
         return '/images/youtube.svg';
       case 'vanilla-forum':
         return '/images/commercequest.png';
@@ -76,7 +70,9 @@ export function SourceFilter() {
   const getSourceLabel = (sourceId: string) => {
     switch (sourceId) {
       case 'youtube':
-        return 'YouTube';
+        return 'Our YouTube Channel';
+      case 'youtube-search':
+        return 'Related YouTube Content';
       case 'vanilla-forum':
         return 'Community Forum';
       default:
@@ -85,8 +81,11 @@ export function SourceFilter() {
   };
 
   const getStatusColor = (sourceId: string) => {
-    if (sourceId === 'youtube' && youtubeError) {
-      const errorMessage = youtubeError instanceof Error ? youtubeError.message : String(youtubeError);
+    if ((sourceId === 'youtube' && youtubeError) || (sourceId === 'youtube-search' && youtubeSearchError)) {
+      const errorMessage = sourceId === 'youtube' 
+        ? youtubeError instanceof Error ? youtubeError.message : String(youtubeError)
+        : youtubeSearchError instanceof Error ? youtubeSearchError.message : String(youtubeSearchError);
+      
       if (errorMessage.includes('quota exceeded')) {
         return 'text-yellow-500 dark:text-yellow-400';
       }
@@ -106,15 +105,14 @@ export function SourceFilter() {
         </h2>
         <button
           onClick={handleRefresh}
-          disabled={isRefreshing}
-          className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors duration-200
-                     ${isRefreshing 
-                       ? 'text-gray-400 border-gray-400 cursor-not-allowed'
-                       : 'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                     } border`}
+          className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 
+                   dark:text-blue-400 dark:hover:text-blue-300 
+                   border border-blue-600 dark:border-blue-400 rounded-lg 
+                   hover:bg-blue-50 dark:hover:bg-blue-900/20 
+                   transition-colors duration-200"
           aria-label="Refresh sources"
         >
-          {isRefreshing ? 'Refreshing...' : 'Refresh Sources'}
+          Refresh Sources
         </button>
       </div>
       <div className="space-y-4">
