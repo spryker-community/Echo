@@ -24,7 +24,8 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
     'vanilla-forum': '/images/commercequest.png',
     'youtube': '/images/youtube.svg',
     'youtube-search': '/images/youtube.svg',
-    'bluesky': '/images/bluesky.svg'
+    'bluesky': '/images/bluesky.svg',
+    'rss': '/images/rss.svg'
   };
 
   const handleHide = () => {
@@ -155,6 +156,19 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
               <>
                 <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
                 <span>{item.metadata.imageCount} image{item.metadata.imageCount !== 1 ? 's' : ''}</span>
+              </>
+            )}
+          </div>
+        );
+
+      case 'rss':
+        return (
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <span className="font-medium">{item.metadata.feedTitle || 'RSS Feed'}</span>
+            {item.metadata.categories && item.metadata.categories.length > 0 && (
+              <>
+                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
+                <span>{item.metadata.categories.join(', ')}</span>
               </>
             )}
           </div>

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useForumPosts } from './useForumPosts';
 import { useYouTubeVideos } from './useYouTubeVideos';
 import { useBlueSkyPosts } from './useBlueSkyPosts';
+import { useRSSFeeds } from './useRSSFeeds';
 import { useSources } from '../context/SourceContext';
 import { ContentItem } from '../types';
 import { useQueryClient } from '@tanstack/react-query';
@@ -16,18 +17,21 @@ export function useContentItems() {
   const youtubeEnabled = sources.find(s => s.id === 'youtube')?.enabled ?? false;
   const youtubeSearchEnabled = sources.find(s => s.id === 'youtube-search')?.enabled ?? false;
   const blueSkyEnabled = sources.find(s => s.id === 'bluesky')?.enabled ?? false;
+  const rssEnabled = sources.find(s => s.id === 'rss')?.enabled ?? false;
 
   // Clear cache on mount to ensure fresh data
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['forumPosts'] });
     queryClient.invalidateQueries({ queryKey: ['youtubeVideos'] });
     queryClient.invalidateQueries({ queryKey: ['blueSkyPosts'] });
+    queryClient.invalidateQueries({ queryKey: ['rss-feeds'] });
   }, [queryClient]);
 
   const { data: forumPosts = [], error: forumError } = useForumPosts(forumEnabled);
   const { data: youtubeVideos = [], error: youtubeError } = useYouTubeVideos(youtubeEnabled, 'youtube');
   const { data: youtubeSearchVideos = [], error: youtubeSearchError } = useYouTubeVideos(youtubeSearchEnabled, 'youtube-search');
   const { data: blueSkyPosts = [], error: blueSkyError } = useBlueSkyPosts(blueSkyEnabled);
+  const { items: rssItems = [], error: rssError } = useRSSFeeds(rssEnabled);
 
   // Log source status for debugging
   console.log('Content Sources Status:', {
@@ -58,6 +62,12 @@ export function useContentItems() {
       postsCount: blueSkyPosts.length,
       hasError: !!blueSkyError,
       error: blueSkyError ? String(blueSkyError) : null
+    },
+    rss: {
+      enabled: rssEnabled,
+      itemsCount: rssItems.length,
+      hasError: !!rssError,
+      error: rssError ? String(rssError) : null
     }
   });
 
@@ -90,11 +100,16 @@ export function useContentItems() {
       allItems.push(...blueSkyPosts);
     }
 
+    // Add RSS items if source is enabled and we have data
+    if (enabledSources.includes('rss') && rssItems.length > 0) {
+      allItems.push(...rssItems);
+    }
+
     // Sort by date, most recent first
     return allItems.sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
-  }, [forumPosts, youtubeVideos, youtubeSearchVideos, blueSkyPosts, enabledSources]);
+  }, [forumPosts, youtubeVideos, youtubeSearchVideos, blueSkyPosts, rssItems, enabledSources]);
 
   // Log final items for debugging
   console.log('Final Content Items:', {
@@ -103,7 +118,8 @@ export function useContentItems() {
       forum: items.filter(item => item.source === 'vanilla-forum').length,
       youtube: items.filter(item => item.source === 'youtube').length,
       youtubeSearch: items.filter(item => item.source === 'youtube-search').length,
-      blueSky: items.filter(item => item.source === 'bluesky').length
+      blueSky: items.filter(item => item.source === 'bluesky').length,
+      rss: items.filter(item => item.source === 'rss').length
     }
   });
 

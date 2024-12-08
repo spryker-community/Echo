@@ -77,6 +77,8 @@ Project plan: see /project_briefing.md
 - [ ] Enhance message generation for RSS content
 - [ ] Add RSS preview capabilities
 - [ ] Add ability to handle CORS through Netlify functions
+- [ ] use the RSS feeds from the .env file
+- [ ] add RSS switches/toggles to the existing frontend Content Sources block
 
 ## Phase 4 - Polish & Testing (Week 7-8)
 

@@ -60,6 +60,12 @@ interface BlueSkyMetadata {
   };
 }
 
+interface RSSMetadata {
+  feedTitle: string;
+  feedDescription?: string;
+  categories?: string[];
+}
+
 interface ForumContentItem extends BaseContentItem {
   source: 'vanilla-forum';
   type: 'forum';
@@ -87,7 +93,7 @@ interface GitHubContentItem extends BaseContentItem {
 interface RSSContentItem extends BaseContentItem {
   source: 'rss';
   type: 'rss';
-  metadata: Record<string, unknown>;
+  metadata: RSSMetadata;
 }
 
 export type ContentItem = ForumContentItem | YouTubeContentItem | GitHubContentItem | RSSContentItem | BlueSkyContentItem;
@@ -99,13 +105,20 @@ export interface GeneratedPost {
   generatedAt: string;
 }
 
-export interface SourceConfig {
+export interface BaseSourceConfig {
   id: string;
   type: string;
   url: string;
   apiKey?: string;
   enabled: boolean;
 }
+
+export interface RSSSourceConfig extends BaseSourceConfig {
+  type: 'rss';
+  name: string;
+}
+
+export type SourceConfig = BaseSourceConfig | RSSSourceConfig;
 
 export type Team =
   | 'Cloud Operations'

@@ -36,6 +36,25 @@ function getBlueSkyUrl(): string {
   return `https://bsky.social/xrpc/app.bsky.feed.searchPosts`;
 }
 
+// Get RSS feed configurations
+const rssFeeds = [
+  {
+    id: 'rss-feed-1',
+    name: import.meta.env.VITE_RSS_FEED_1_NAME,
+    url: import.meta.env.VITE_RSS_FEED_1_URL,
+  },
+  {
+    id: 'rss-feed-2',
+    name: import.meta.env.VITE_RSS_FEED_2_NAME,
+    url: import.meta.env.VITE_RSS_FEED_2_URL,
+  },
+  {
+    id: 'rss-feed-3',
+    name: import.meta.env.VITE_RSS_FEED_3_NAME,
+    url: import.meta.env.VITE_RSS_FEED_3_URL,
+  }
+].filter(feed => feed.url && feed.name);
+
 export const defaultSources: SourceConfig[] = [
   {
     id: 'vanilla-forum',
@@ -49,14 +68,14 @@ export const defaultSources: SourceConfig[] = [
     type: 'youtube',
     url: getYouTubeUrl(),
     apiKey: import.meta.env.VITE_YOUTUBE_API_TOKEN,
-    enabled: true,
+    enabled: false, // YouTube channel disabled by default
   },
   {
     id: 'youtube-search',
     type: 'youtube-search',
     url: getYouTubeSearchUrl(),
     apiKey: import.meta.env.VITE_YOUTUBE_API_TOKEN,
-    enabled: true,
+    enabled: false, // YouTube search disabled by default
   },
   {
     id: 'bluesky',
@@ -64,5 +83,13 @@ export const defaultSources: SourceConfig[] = [
     url: getBlueSkyUrl(),
     apiKey: import.meta.env.VITE_BLUESKY_APP_PASSWORD,
     enabled: true,
-  }
+  },
+  // Add individual RSS feeds as separate sources
+  ...rssFeeds.map(feed => ({
+    id: feed.id,
+    type: 'rss',
+    name: feed.name,
+    url: feed.url,
+    enabled: true,
+  }))
 ];
