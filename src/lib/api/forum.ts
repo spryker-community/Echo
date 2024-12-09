@@ -87,10 +87,13 @@ export async function fetchDiscussionComments(discussionId: string): Promise<For
   try {
     console.log('[FORUM API] Fetching comments for discussion:', discussionId);
     
-    // Make direct API call since CORS is configured
-    const response = await axios.get<ForumComment[]>(
-      `${import.meta.env.VITE_FORUM_API_URL}/api/v2/discussion/${discussionId}/comments`,
+    // Use the correct API v2 endpoint for comments with discussionID filter
+    const response = await axios.get<{ data: ForumComment[] }>(
+      `${import.meta.env.VITE_FORUM_API_URL}/api/v2/comments`,
       {
+        params: {
+          discussionID: discussionId
+        },
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_FORUM_API_KEY}`,
           'Accept': 'application/json'
@@ -98,7 +101,8 @@ export async function fetchDiscussionComments(discussionId: string): Promise<For
       }
     );
 
-    const comments = response.data;
+    // API v2 wraps responses in a data property
+    const comments = response.data.data;
     console.log(`[FORUM API] Fetched ${comments.length} comments for discussion ${discussionId}`);
 
     return comments.map(comment => ({
@@ -115,7 +119,7 @@ export async function fetchDiscussions(): Promise<ForumDiscussion[]> {
   try {
     console.log('[FORUM API] Fetching forum discussions');
     
-    const response = await axios.get<ForumDiscussion[]>(
+    const response = await axios.get<{ data: ForumDiscussion[] }>(
       `${import.meta.env.VITE_FORUM_API_URL}/api/v2/discussions`,
       {
         headers: {
@@ -125,7 +129,8 @@ export async function fetchDiscussions(): Promise<ForumDiscussion[]> {
       }
     );
 
-    const discussions = response.data;
+    // API v2 wraps responses in a data property
+    const discussions = response.data.data;
     console.log(`[FORUM API] Fetched ${discussions.length} discussions`);
 
     return discussions.map(discussion => {
