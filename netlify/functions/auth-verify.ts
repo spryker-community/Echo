@@ -97,10 +97,11 @@ export const handler: Handler = async (event) => {
         { algorithm: 'HS256' }
       );
 
-      const cookieHeader = `auth=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; ${IS_PROD ? 'Secure; ' : ''}Domain=.commercequest.space; Max-Age=${7 * 24 * 60 * 60}`;
+      // Update cookie domain to match request origin
+      const cookieHeader = `auth=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; ${IS_PROD ? 'Secure; ' : ''}Domain=${domain}; Max-Age=${7 * 24 * 60 * 60}`;
       console.log('Cookie configuration:', {
         isProd: IS_PROD,
-        domain: '.commercequest.space',
+        domain,
         sameSite: 'Lax',
         maxAge: 7 * 24 * 60 * 60,
         cookieLength: cookieHeader.length,
