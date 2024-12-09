@@ -105,7 +105,7 @@ export const handler: Handler = async (event) => {
       });
 
       // Return redirect with cookie
-      return {
+      const response = {
         statusCode: 302,
         headers: {
           'Location': '/',
@@ -116,6 +116,9 @@ export const handler: Handler = async (event) => {
         },
         body: '',
       };
+
+      console.log('Response details:', response);
+      return response;
 
     } catch (error: any) {
       console.error('Token verification error:', {
