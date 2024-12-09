@@ -87,8 +87,9 @@ export async function fetchDiscussionComments(discussionId: string): Promise<For
   try {
     console.log('[FORUM API] Fetching comments for discussion:', discussionId);
     
+    // Use the same URL format as in useForumPosts.ts
     const response = await axios.get<ForumComment[]>(
-      `${import.meta.env.VITE_FORUM_API_URL}/api/v2/discussions/${discussionId}/comments`,
+      `${import.meta.env.VITE_FORUM_API_URL}/discussion/${discussionId}/comments`,
       {
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_FORUM_API_KEY}`
