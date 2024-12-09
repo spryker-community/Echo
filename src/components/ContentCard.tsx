@@ -1,10 +1,13 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './ui/card';
 import { ContentItem } from '../types';
-import { formatDate, formatRelativeTime } from '../lib/utils';
+import { formatDate } from '../lib/utils';
 import { useHidden } from '../context/HiddenContext';
-import { X, Copy, Check } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
+import { SourceMetadata } from './content-card/SourceMetadata';
+import { GeneratedMessage } from './content-card/GeneratedMessage';
+import { sourceIcons } from './content-card/source-icons';
 
 interface ContentCardProps {
   item: ContentItem;
@@ -19,15 +22,6 @@ interface ContentCardProps {
 export function ContentCard({ item, onGenerate, generatedContent, isGenerating }: ContentCardProps) {
   const { hidePost } = useHidden();
   const { showToast } = useToast();
-  const [hasCopied, setHasCopied] = React.useState(false);
-  
-  const sourceIcons: Record<string, string> = {
-    'vanilla-forum': '/images/commercequest.png',
-    'youtube': '/images/youtube.svg',
-    'youtube-search': '/images/youtube.svg',
-    'bluesky': '/images/bluesky.svg',
-    'rss': '/images/rss.svg'
-  };
 
   const handleHide = () => {
     hidePost(item.id);
@@ -37,158 +31,9 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
     });
   };
 
-  const handleCopy = async () => {
-    if (generatedContent?.content) {
-      await navigator.clipboard.writeText(generatedContent.content);
-      setHasCopied(true);
-      showToast({
-        title: "Copied",
-        description: "Message copied to clipboard",
-      });
-      setTimeout(() => setHasCopied(false), 2000);
-    }
-  };
-
-  const getStatusColor = (status: string | undefined) => {
-    switch (status) {
-      case 'solved':
-        return 'bg-[#00AEEF]/10 text-[#00AEEF] dark:bg-[#00AEEF]/20 dark:text-[#00AEEF]';
-      case 'in_progress':
-        return 'bg-[#EC008C]/10 text-[#EC008C] dark:bg-[#EC008C]/20 dark:text-[#EC008C]';
-      default:
-        return 'bg-[#00AEEF]/10 text-[#00AEEF] dark:bg-[#00AEEF]/20 dark:text-[#00AEEF]';
-    }
-  };
-
-  const getStatusLabel = (status: string | undefined) => {
-    switch (status) {
-      case 'solved':
-        return 'Solved';
-      case 'in_progress':
-        return 'In Progress';
-      default:
-        return 'Open';
-    }
-  };
-
-  const renderMetadata = () => {
-    switch (item.source) {
-      case 'vanilla-forum': {
-        const { insertUser, categoryName, countComments, dateLastComment, status, type } = item.metadata;
-        const hasNewActivity = dateLastComment && new Date(dateLastComment) > new Date(item.date);
-        
-        return (
-          <div className="flex flex-col space-y-2">
-            <div className="flex items-center flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400">
-              {insertUser && (
-                <div className="flex items-center gap-1 min-w-0">
-                  {insertUser.photoUrl ? (
-                    <img 
-                      src={insertUser.photoUrl} 
-                      alt={insertUser.name}
-                      className="w-4 h-4 rounded-full flex-shrink-0"
-                    />
-                  ) : (
-                    <span className="flex-shrink-0">👤</span>
-                  )}
-                  <a 
-                    href={insertUser.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline truncate hover:text-[#00AEEF] dark:hover:text-[#00AEEF]"
-                  >
-                    {insertUser.name}
-                  </a>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
-                <a 
-                  href={item.metadata.categoryUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline hover:text-[#00AEEF] dark:hover:text-[#00AEEF]"
-                >
-                  {categoryName}
-                </a>
-                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
-                <span>{countComments} comments</span>
-              </div>
-              {type === 'question' && (
-                <>
-                  <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
-                    {getStatusLabel(status)}
-                  </span>
-                </>
-              )}
-            </div>
-            {hasNewActivity && (
-              <div className="flex items-center gap-2">
-                <span className="flex h-2 w-2 rounded-full bg-[#00AEEF]"></span>
-                <span className="text-xs text-[#00AEEF] font-medium">
-                  Updated {formatRelativeTime(dateLastComment)}
-                </span>
-              </div>
-            )}
-          </div>
-        );
-      }
-
-      case 'youtube':
-      case 'youtube-search':
-        return (
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <span className="font-medium">{item.metadata.channelTitle}</span>
-          </div>
-        );
-
-      case 'bluesky':
-        return (
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <div className="flex items-center gap-1">
-              {item.metadata.author.avatar ? (
-                <img 
-                  src={item.metadata.author.avatar} 
-                  alt={item.metadata.author.name}
-                  className="w-4 h-4 rounded-full flex-shrink-0"
-                />
-              ) : (
-                <span className="flex-shrink-0">👤</span>
-              )}
-              <a 
-                href={`https://bsky.app/profile/${item.metadata.author.handle}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:underline"
-              >
-                {item.metadata.author.name}
-              </a>
-            </div>
-            {item.metadata.hasImages && (
-              <>
-                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
-                <span>{item.metadata.imageCount} image{item.metadata.imageCount !== 1 ? 's' : ''}</span>
-              </>
-            )}
-          </div>
-        );
-
-      case 'rss':
-        return (
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <span className="font-medium">{item.metadata.feedTitle || 'RSS Feed'}</span>
-            {item.metadata.categories && item.metadata.categories.length > 0 && (
-              <>
-                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
-                <span>{item.metadata.categories.join(', ')}</span>
-              </>
-            )}
-          </div>
-        );
-
-      default:
-        return null;
+  const handleUpdateMessage = (newContent: string) => {
+    if (generatedContent) {
+      generatedContent.content = newContent;
     }
   };
 
@@ -238,7 +83,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
               <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
                 {formatDate(item.date)}
               </CardDescription>
-              {renderMetadata()}
+              <SourceMetadata source={item.source} metadata={item.metadata} />
             </div>
           </div>
         </div>
@@ -263,31 +108,11 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
               </p>
             </div>
           ) : generatedContent && (
-            <>
-              <div className="mb-2 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-[#00AEEF]">Generated Message</h4>
-                  <button
-                    onClick={handleCopy}
-                    className="p-1 text-gray-400 hover:text-[#00AEEF] dark:text-gray-500 dark:hover:text-[#00AEEF] 
-                             rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    title="Copy message"
-                  >
-                    {hasCopied ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  For: {generatedContent.targetAudiences.join(', ')}
-                </div>
-              </div>
-              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                {generatedContent.content}
-              </p>
-            </>
+            <GeneratedMessage 
+              content={generatedContent.content}
+              targetAudiences={generatedContent.targetAudiences}
+              onUpdate={handleUpdateMessage}
+            />
           )}
         </div>
       )}

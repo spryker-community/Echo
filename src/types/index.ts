@@ -7,7 +7,7 @@ interface BaseContentItem {
   image?: string;
 }
 
-interface ForumUser {
+export interface ForumUser {
   name: string;
   photoUrl?: string;
   url: string;
@@ -16,7 +16,7 @@ interface ForumUser {
 export type DiscussionStatus = 'open' | 'in_progress' | 'solved';
 export type DiscussionType = 'question' | 'discussion';
 
-interface ForumMetadata {
+export interface ForumMetadata {
   categoryID: number;
   categoryName: string;
   categoryUrl?: string;
@@ -30,7 +30,7 @@ interface ForumMetadata {
   type?: DiscussionType;
 }
 
-interface YouTubeMetadata {
+export interface YouTubeMetadata {
   channelTitle: string;
   channelId: string;
   thumbnails: {
@@ -41,7 +41,7 @@ interface YouTubeMetadata {
   };
 }
 
-interface BlueSkyMetadata {
+export interface BlueSkyMetadata {
   author: {
     name: string;
     handle: string;
@@ -60,7 +60,7 @@ interface BlueSkyMetadata {
   };
 }
 
-interface RSSMetadata {
+export interface RSSMetadata {
   feedTitle: string;
   feedDescription?: string;
   categories?: string[];
