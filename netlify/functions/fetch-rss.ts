@@ -16,12 +16,21 @@ const handler: Handler = async (event) => {
       };
     }
 
-    console.log(`Fetching RSS feed: ${feedUrl}`);
+    console.log(`[DEBUG] Starting RSS fetch for URL: ${feedUrl}`);
+    console.log(`[DEBUG] Full event object:`, JSON.stringify(event, null, 2));
 
     try {
+      // Log the attempt to fetch
+      console.log(`[DEBUG] Attempting to fetch and parse RSS feed from: ${feedUrl}`);
+
       // Fetch and parse the RSS feed
       const feed = await parser.parseURL(feedUrl);
-      console.log(`Successfully parsed RSS feed: ${feed.title}`);
+      console.log(`[DEBUG] Successfully parsed RSS feed: ${feed.title}`);
+      console.log(`[DEBUG] Feed metadata:`, JSON.stringify({
+        title: feed.title,
+        description: feed.description,
+        itemCount: feed.items.length
+      }, null, 2));
 
       // Transform feed items to match our content structure
       const items = feed.items.map((item) => ({
@@ -39,7 +48,7 @@ const handler: Handler = async (event) => {
         },
       }));
 
-      console.log(`Transformed ${items.length} items from feed`);
+      console.log(`[DEBUG] Successfully transformed ${items.length} items from feed`);
 
       return {
         statusCode: 200,
@@ -47,26 +56,54 @@ const handler: Handler = async (event) => {
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         },
       };
     } catch (feedError) {
-      console.error(`Error parsing RSS feed ${feedUrl}:`, feedError);
+      console.error(`[DEBUG] Error details for RSS feed ${feedUrl}:`, {
+        error: feedError instanceof Error ? {
+          name: feedError.name,
+          message: feedError.message,
+          stack: feedError.stack
+        } : feedError
+      });
+      
       return {
         statusCode: 500,
         body: JSON.stringify({ 
           error: 'Failed to parse RSS feed',
           details: feedError instanceof Error ? feedError.message : String(feedError)
         }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        },
       };
     }
   } catch (error) {
-    console.error('RSS feed handler error:', error);
+    console.error('[DEBUG] General handler error:', {
+      error: error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      } : error
+    });
+    
     return {
       statusCode: 500,
       body: JSON.stringify({ 
         error: 'Internal server error processing RSS feed',
         details: error instanceof Error ? error.message : String(error)
       }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      },
     };
   }
 };

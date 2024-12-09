@@ -1,0 +1,12 @@
+drd[dev]
+  targetPort = 5174
+
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"

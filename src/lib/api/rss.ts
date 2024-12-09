@@ -20,27 +20,54 @@ export async function fetchRSSFeeds(): Promise<ContentItem[]> {
   try {
     // Check if RSS feeds are configured
     if (RSS_FEEDS.length === 0) {
-      console.info('No RSS feeds configured');
+      console.info('[RSS] No RSS feeds configured');
+      console.debug('[RSS] Environment variables:', {
+        FEED_1: {
+          name: import.meta.env.VITE_RSS_FEED_1_NAME,
+          url: import.meta.env.VITE_RSS_FEED_1_URL
+        },
+        FEED_2: {
+          name: import.meta.env.VITE_RSS_FEED_2_NAME,
+          url: import.meta.env.VITE_RSS_FEED_2_URL
+        },
+        FEED_3: {
+          name: import.meta.env.VITE_RSS_FEED_3_NAME,
+          url: import.meta.env.VITE_RSS_FEED_3_URL
+        }
+      });
       return [];
     }
 
-    console.info('Fetching RSS feeds:', RSS_FEEDS.map(f => f.name));
+    console.info('[RSS] Configured feeds:', RSS_FEEDS.map(f => ({ name: f.name, url: f.url })));
 
     // Fetch all configured RSS feeds
     const feedPromises = RSS_FEEDS.map(async (feed) => {
       try {
-        console.info(`Fetching RSS feed: ${feed.name}`);
+        console.info(`[RSS] Fetching feed: ${feed.name} (${feed.url})`);
+        
+        // Construct the Netlify function URL
+        const functionUrl = import.meta.env.PROD 
+          ? '/.netlify/functions/fetch-rss' // Production URL
+          : 'http://localhost:8888/.netlify/functions/fetch-rss'; // Local development URL
+        
         const params = new URLSearchParams({ url: feed.url });
-        const response = await fetch(`/.netlify/functions/fetch-rss?${params}`);
+        const fullUrl = `${functionUrl}?${params}`;
+        console.debug(`[RSS] Fetching from: ${fullUrl}`);
+
+        const response = await fetch(fullUrl);
         
         if (!response.ok) {
           const errorText = await response.text();
-          console.warn(`Failed to fetch RSS feed ${feed.name}:`, errorText);
+          console.error(`[RSS] Failed to fetch feed ${feed.name}:`, {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText
+          });
           return [];
         }
         
         const items = await response.json();
-        console.info(`Received ${items.length} items from ${feed.name}`);
+        console.info(`[RSS] Received ${items.length} items from ${feed.name}`);
         
         // Add feed name to metadata for each item
         return items.map((item: any) => ({
@@ -51,7 +78,13 @@ export async function fetchRSSFeeds(): Promise<ContentItem[]> {
           }
         }));
       } catch (feedError) {
-        console.warn(`Error processing RSS feed ${feed.name}:`, feedError);
+        console.error(`[RSS] Error processing feed ${feed.name}:`, {
+          error: feedError instanceof Error ? {
+            name: feedError.name,
+            message: feedError.message,
+            stack: feedError.stack
+          } : feedError
+        });
         return [];
       }
     });
@@ -66,10 +99,16 @@ export async function fetchRSSFeeds(): Promise<ContentItem[]> {
       )
       .flatMap(result => result.value);
 
-    console.info(`Total RSS items fetched: ${items.length}`);
+    console.info(`[RSS] Total items fetched: ${items.length}`);
     return items;
   } catch (error) {
-    console.error('Error fetching RSS feeds:', error);
+    console.error('[RSS] General error fetching feeds:', {
+      error: error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      } : error
+    });
     return [];
   }
 }
