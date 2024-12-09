@@ -36,24 +36,34 @@ function getBlueSkyUrl(): string | null {
   return `https://bsky.social/xrpc/app.bsky.feed.searchPosts`;
 }
 
-// Get RSS feed configurations
-const rssFeeds = [
-  {
-    id: 'rss-feed-1',
-    name: import.meta.env.VITE_RSS_FEED_1_NAME,
-    url: import.meta.env.VITE_RSS_FEED_1_URL,
-  },
-  {
-    id: 'rss-feed-2',
-    name: import.meta.env.VITE_RSS_FEED_2_NAME,
-    url: import.meta.env.VITE_RSS_FEED_2_URL,
-  },
-  {
-    id: 'rss-feed-3',
-    name: import.meta.env.VITE_RSS_FEED_3_NAME,
-    url: import.meta.env.VITE_RSS_FEED_3_URL,
+// Get RSS feed configurations dynamically
+function getRSSFeeds() {
+  const feeds = [];
+  let index = 1;
+
+  while (true) {
+    const name = import.meta.env[`VITE_RSS_FEED_${index}_NAME`];
+    const url = import.meta.env[`VITE_RSS_FEED_${index}_URL`];
+
+    // If either name or url is missing, we've reached the end
+    if (!name || !url) {
+      break;
+    }
+
+    feeds.push({
+      id: `rss-feed-${index}`,
+      type: 'rss' as const,
+      name,
+      url,
+      enabled: true
+    });
+
+    index++;
   }
-].filter(feed => feed.url && feed.name);
+
+  console.debug('[Sources] Found RSS feeds:', feeds);
+  return feeds;
+}
 
 // Create sources array with required environment variables
 const sources: SourceConfig[] = [];
@@ -106,15 +116,7 @@ if (blueSkyUrl && import.meta.env.VITE_BLUESKY_APP_PASSWORD) {
   });
 }
 
-// Add RSS feeds
-sources.push(
-  ...rssFeeds.map(feed => ({
-    id: feed.id,
-    type: 'rss' as const,
-    name: feed.name,
-    url: feed.url,
-    enabled: true,
-  }))
-);
+// Add RSS feeds dynamically
+sources.push(...getRSSFeeds());
 
 export const defaultSources = sources;

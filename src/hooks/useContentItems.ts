@@ -17,7 +17,8 @@ export function useContentItems() {
   const youtubeEnabled = sources.find(s => s.id === 'youtube')?.enabled ?? false;
   const youtubeSearchEnabled = sources.find(s => s.id === 'youtube-search')?.enabled ?? false;
   const blueSkyEnabled = sources.find(s => s.id === 'bluesky')?.enabled ?? false;
-  const rssEnabled = sources.find(s => s.id === 'rss')?.enabled ?? false;
+  // Check if any RSS feed is enabled
+  const rssEnabled = sources.some(s => s.type === 'rss' && s.enabled);
 
   // Clear cache on mount to ensure fresh data
   useEffect(() => {
@@ -100,8 +101,8 @@ export function useContentItems() {
       allItems.push(...blueSkyPosts);
     }
 
-    // Add RSS items if source is enabled and we have data
-    if (enabledSources.includes('rss') && rssItems.length > 0) {
+    // Add RSS items if any RSS feed is enabled and we have data
+    if (rssEnabled && rssItems.length > 0) {
       allItems.push(...rssItems);
     }
 
@@ -109,7 +110,7 @@ export function useContentItems() {
     return allItems.sort((a, b) => 
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
-  }, [forumPosts, youtubeVideos, youtubeSearchVideos, blueSkyPosts, rssItems, enabledSources]);
+  }, [forumPosts, youtubeVideos, youtubeSearchVideos, blueSkyPosts, rssItems, enabledSources, rssEnabled]);
 
   // Log final items for debugging
   console.log('Final Content Items:', {
