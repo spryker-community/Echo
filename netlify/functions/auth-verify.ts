@@ -4,6 +4,7 @@ import * as jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || '';
 const SITE_URL = process.env.URL || 'http://localhost:8888';
 const IS_PROD = process.env.CONTEXT === 'production';
+const ALLOWED_DOMAINS = process.env.ALLOWED_DOMAINS ? process.env.ALLOWED_DOMAINS.split(',') : [];
 
 interface JWTPayload {
   email: string;
@@ -21,10 +22,8 @@ const createErrorResponse = (origin: string, message: string) => ({
 });
 
 export const handler: Handler = async (event) => {
-  // Initial log to capture the start of the request
   console.log('Auth verification handler invoked');
   
-  // Get the origin from the request headers or use the SITE_URL
   const origin = event.headers.origin || SITE_URL;
   const url = new URL(origin);
   const domain = url.hostname;
@@ -40,7 +39,6 @@ export const handler: Handler = async (event) => {
   });
 
   try {
-    // Get token from query parameters
     const encodedToken = event.queryStringParameters?.token;
 
     if (!encodedToken) {
@@ -48,27 +46,23 @@ export const handler: Handler = async (event) => {
       return createErrorResponse(origin, 'No token provided');
     }
 
-    // Decode the URL-encoded token
     const token = decodeURIComponent(encodedToken);
     console.log('Token length:', token.length);
 
     try {
-      // Log the token (without sensitive parts)
       const tokenPreview = `${token.substring(0, 10)}...${token.substring(token.length - 10)}`;
       console.log('Verifying token:', tokenPreview);
 
-      // Check JWT_SECRET
       if (!JWT_SECRET) {
         console.error('JWT_SECRET is not set');
         return createErrorResponse(origin, 'Server configuration error');
       }
 
-      // Verify token
       let decoded;
       try {
         decoded = jwt.verify(token, JWT_SECRET, {
           algorithms: ['HS256'],
-          maxAge: '15m', // 15 minutes
+          maxAge: '15m',
         }) as JWTPayload;
 
         console.log('Token decoded:', {
@@ -76,6 +70,13 @@ export const handler: Handler = async (event) => {
           exp: decoded.exp ? new Date(decoded.exp * 1000).toISOString() : undefined,
           iat: decoded.iat ? new Date(decoded.iat * 1000).toISOString() : undefined,
         });
+
+        // Check if the email domain is allowed
+        const emailDomain = decoded.email.split('@')[1];
+        if (!ALLOWED_DOMAINS.includes(emailDomain)) {
+          console.error('Email domain not allowed:', emailDomain);
+          return createErrorResponse(origin, 'Email domain not allowed');
+        }
 
       } catch (jwtError: any) {
         console.error('JWT verification error:', {
@@ -87,17 +88,15 @@ export const handler: Handler = async (event) => {
         return createErrorResponse(origin, `Token verification failed: ${jwtError.message}`);
       }
 
-      // Generate session token
       const sessionToken = jwt.sign(
         { 
           email: decoded.email,
-          exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
+          exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
         },
         JWT_SECRET,
         { algorithm: 'HS256' }
       );
 
-      // Create cookie header
       const cookieHeader = `auth=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; ${IS_PROD ? 'Secure; ' : ''}Domain=.commercequest.space; Max-Age=${7 * 24 * 60 * 60}`;
       console.log('Cookie configuration:', {
         isProd: IS_PROD,
@@ -107,10 +106,8 @@ export const handler: Handler = async (event) => {
         cookieLength: cookieHeader.length,
       });
 
-      // Delay before redirect to allow log capture
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Return redirect with cookie
       const response = {
         statusCode: 302,
         headers: {
