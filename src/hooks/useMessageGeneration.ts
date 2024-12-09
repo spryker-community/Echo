@@ -62,8 +62,8 @@ async function generateMessageForItem(item: ContentItem, showWarning: (message: 
 
   const metadataString = metadata.join('\n');
 
-  // Add prohibited phrases as instructions to avoid using them
-  const prohibitedPhrasesInstruction = `\n\nIMPORTANT: Do not use the following phrases in your response: ${PROHIBITED_PHRASES.join(', ')}`;
+  // Add prohibited phrases as instructions to avoid using them in the generated response
+  const prohibitedPhrasesInstruction = `\n\nIMPORTANT: Your response must not contain any of these phrases: ${PROHIBITED_PHRASES.join(', ')}`;
 
   const prompt = `${context}\n\nMetadata:\n${metadataString}\n\nDirective:\n${directive}${prohibitedPhrasesInstruction}\n\nContent:\n${fullContent}`;
 
