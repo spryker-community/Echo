@@ -21,6 +21,8 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
     const checkAuth = () => {
       const cookies = document.cookie.split(';');
       const authCookie = cookies.find(cookie => cookie.trim().startsWith('auth='));
+      console.log('Current cookies:', document.cookie);
+      console.log('Found auth cookie:', authCookie);
       
       if (!authCookie) {
         setIsAuthenticated(false);
@@ -74,28 +76,51 @@ function VerifyAuth() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
+  const [verificationStatus, setVerificationStatus] = React.useState('Initializing verification...');
 
   React.useEffect(() => {
     async function verifyToken() {
+      if (!token) {
+        console.log('No token found in URL');
+        setVerificationStatus('No token provided');
+        navigate('/auth/error', { 
+          replace: true,
+          state: { message: 'No authentication token provided' }
+        });
+        return;
+      }
+
       try {
-        // Pass token as query parameter
-        const response = await fetch(`/.netlify/functions/auth-verify?token=${encodeURIComponent(token!)}`, {
+        console.log('Starting token verification');
+        setVerificationStatus('Verifying token...');
+
+        // Pass token as query parameter and follow redirects
+        const response = await fetch(`/.netlify/functions/auth-verify?token=${encodeURIComponent(token)}`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
           credentials: 'include',
+          redirect: 'manual', // Don't follow redirects automatically
         });
 
-        // Follow redirect with credentials
-        if (response.ok || response.status === 302) {
+        console.log('Verification response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          url: response.url,
+        });
+
+        // Check if we got a redirect
+        if (response.status === 302) {
+          setVerificationStatus('Verification successful, redirecting...');
+          // Get the redirect location
           const location = response.headers.get('Location');
           if (location) {
-            window.location.href = location;
+            // Use window.location.replace for a full page reload
+            window.location.replace(location);
           } else {
-            navigate('/', { replace: true });
+            window.location.replace('/');
           }
         } else {
+          console.error('Unexpected response:', response.status);
           navigate('/auth/error', { 
             replace: true,
             state: { message: 'Failed to verify authentication token' }
@@ -103,6 +128,7 @@ function VerifyAuth() {
         }
       } catch (error) {
         console.error('Verification error:', error);
+        setVerificationStatus('Error during verification');
         navigate('/auth/error', { 
           replace: true,
           state: { message: 'Failed to verify authentication token' }
@@ -110,14 +136,7 @@ function VerifyAuth() {
       }
     }
 
-    if (token) {
-      verifyToken();
-    } else {
-      navigate('/auth/error', { 
-        replace: true,
-        state: { message: 'No authentication token provided' }
-      });
-    }
+    verifyToken();
   }, [token, navigate]);
 
   return (
@@ -128,7 +147,7 @@ function VerifyAuth() {
           Verifying your authentication...
         </h2>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Please wait while we verify your login.
+          {verificationStatus}
         </p>
       </div>
     </div>
@@ -140,20 +159,12 @@ function MainContent() {
   const navigate = useNavigate();
 
   const handleSignOut = () => {
-    // Clear the auth cookie with all possible domain configurations
-    const domain = window.location.hostname;
-    const cookieDomain = domain === 'localhost' ? '' : domain;
+    // Clear the auth cookie
+    document.cookie = 'auth=; Path=/; Domain=.commercequest.space; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;';
+    document.cookie = 'auth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;';
     
-    // Try different cookie clearing approaches
-    [
-      `auth=; Path=/; ${cookieDomain ? `Domain=${cookieDomain}; ` : ''}Expires=Thu, 01 Jan 1970 00:00:01 GMT;`,
-      'auth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;',
-      `auth=; Path=/; Domain=.${cookieDomain}; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`,
-    ].forEach(cookie => {
-      document.cookie = cookie;
-    });
-
-    navigate('/auth/login', { replace: true });
+    // Use window.location.replace for a full page reload
+    window.location.replace('/auth/login');
   };
 
   return (

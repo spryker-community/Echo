@@ -23,10 +23,11 @@
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
-    Access-Control-Allow-Origin = ":url"
-    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept"
+    Access-Control-Allow-Origin = "https://echo.commercequest.space"
     Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
     Access-Control-Allow-Credentials = "true"
+    Access-Control-Max-Age = "86400"
 
 [[redirects]]
   from = "/.netlify/functions/auth-verify"
@@ -34,26 +35,23 @@
   status = 200
   force = true
   [redirects.headers]
-    Access-Control-Allow-Origin = ":url"
-    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept"
+    Access-Control-Allow-Origin = "https://echo.commercequest.space"
     Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
     Access-Control-Allow-Credentials = "true"
+    Access-Control-Max-Age = "86400"
 
 [[redirects]]
   from = "/auth/verify"
   to = "/index.html"
   status = 200
   force = true
-  [redirects.headers]
-    Access-Control-Allow-Credentials = "true"
 
 [[redirects]]
   from = "/auth/*"
   to = "/index.html"
   status = 200
   force = true
-  [redirects.headers]
-    Access-Control-Allow-Credentials = "true"
 
 [[redirects]]
   from = "/*"
@@ -62,6 +60,27 @@
 
 [functions]
   node_bundler = "esbuild"
+  external_node_modules = ["jsonwebtoken"]
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[build.processing]
+  skip_processing = false
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.images]
+  compress = true
 
 [template.environment]
   ALLOWED_DOMAINS = "Set the allowed email domains (comma-separated)"
