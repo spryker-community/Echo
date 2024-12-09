@@ -1,4 +1,4 @@
-drd[dev]
+[dev]
   targetPort = 5174
 
 [functions]
