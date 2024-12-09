@@ -1,12 +1,48 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
 [dev]
-  targetPort = 5174
+  command = "npm run dev"
+  targetPort = 5173
+  port = 8888
+  publish = "dist"
+  framework = "#custom"
+  autoLaunch = true
+
+[[redirects]]
+  from = "/auth/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [functions]
   node_bundler = "esbuild"
 
-[[headers]]
-  for = "/.netlify/functions/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+[template.environment]
+  ALLOWED_DOMAINS = "Set the allowed email domains (comma-separated)"
+  JWT_SECRET = "Set a secure secret for JWT tokens"
+  SMTP_HOST = "SMTP server host"
+  SMTP_PORT = "SMTP server port"
+  SMTP_USER = "SMTP username/email"
+  SMTP_PASS = "SMTP password"
+  VITE_AI_MODEL = "Set the AI model"
+  VITE_OPENROUTER_API_KEY = "Set the OpenRouter API key"
+  VITE_RSS_FEED_1_NAME = "Set RSS feed 1 name"
+  VITE_RSS_FEED_1_URL = "Set RSS feed 1 URL"
+  VITE_RSS_FEED_2_NAME = "Set RSS feed 2 name"
+  VITE_RSS_FEED_2_URL = "Set RSS feed 2 URL"
+  VITE_RSS_FEED_3_NAME = "Set RSS feed 3 name"
+  VITE_RSS_FEED_3_URL = "Set RSS feed 3 URL"
+  VITE_FORUM_API_URL = "Set forum API URL"
+  VITE_FORUM_API_KEY = "Set forum API key"
+  VITE_YOUTUBE_API_TOKEN = "Set YouTube API token"
+  VITE_YOUTUBE_CHANNEL_ID = "Set YouTube channel ID"
+  VITE_YOUTUBE_KEYWORDS = "Set YouTube keywords"
+  VITE_BLUESKY_IDENTIFIER = "Set Bluesky identifier"
+  VITE_BLUESKY_APP_PASSWORD = "Set Bluesky app password"

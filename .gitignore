@@ -34,3 +34,6 @@ dist-ssr
 
 # Keep example environment file
 !.env.example
+
+# Local Netlify folder
+.netlify
