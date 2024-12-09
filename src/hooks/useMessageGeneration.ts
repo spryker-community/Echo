@@ -61,19 +61,11 @@ async function generateMessageForItem(item: ContentItem, showWarning: (message: 
   }
 
   const metadataString = metadata.join('\n');
-  const prompt = `${context}\n\nMetadata:\n${metadataString}\n\nDirective:\n${directive}\n\nContent:\n${fullContent}`;
 
-  // Check for prohibited phrases
-  console.log('[Message Generation] Checking for prohibited phrases');
-  const prohibitedPhrasesFound = PROHIBITED_PHRASES.filter(phrase => 
-    prompt.toLowerCase().includes(phrase.toLowerCase())
-  );
+  // Add prohibited phrases as instructions to avoid using them
+  const prohibitedPhrasesInstruction = `\n\nIMPORTANT: Do not use the following phrases in your response: ${PROHIBITED_PHRASES.join(', ')}`;
 
-  if (prohibitedPhrasesFound.length > 0) {
-    console.error('[Message Generation] Prohibited phrases detected:', prohibitedPhrasesFound);
-    console.error('[Message Generation] Full prompt:', prompt);
-    throw new Error(`Content contains prohibited phrases: ${prohibitedPhrasesFound.join(', ')}`);
-  }
+  const prompt = `${context}\n\nMetadata:\n${metadataString}\n\nDirective:\n${directive}${prohibitedPhrasesInstruction}\n\nContent:\n${fullContent}`;
 
   // TODO: Replace with actual API call to message generation service
   return new Promise<GeneratedPost>((resolve) => 
