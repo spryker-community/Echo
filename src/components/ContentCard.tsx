@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { ContentItem } from '../types';
 import { formatDate, formatRelativeTime } from '../lib/utils';
 import { useHidden } from '../context/HiddenContext';
-import { X } from 'lucide-react';
+import { X, Copy, Check } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 
 interface ContentCardProps {
@@ -19,6 +19,7 @@ interface ContentCardProps {
 export function ContentCard({ item, onGenerate, generatedContent, isGenerating }: ContentCardProps) {
   const { hidePost } = useHidden();
   const { showToast } = useToast();
+  const [hasCopied, setHasCopied] = React.useState(false);
   
   const sourceIcons: Record<string, string> = {
     'vanilla-forum': '/images/commercequest.png',
@@ -34,6 +35,18 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
       title: "Post Hidden",
       description: "You can restore hidden posts using the 'Show Hidden' button.",
     });
+  };
+
+  const handleCopy = async () => {
+    if (generatedContent?.content) {
+      await navigator.clipboard.writeText(generatedContent.content);
+      setHasCopied(true);
+      showToast({
+        title: "Copied",
+        description: "Message copied to clipboard",
+      });
+      setTimeout(() => setHasCopied(false), 2000);
+    }
   };
 
   const getStatusColor = (status: string | undefined) => {
@@ -252,7 +265,21 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
           ) : generatedContent && (
             <>
               <div className="mb-2 flex items-center justify-between">
-                <h4 className="text-sm font-medium text-gray-900 dark:text-[#00AEEF]">Generated Insight</h4>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-[#00AEEF]">Generated Message</h4>
+                  <button
+                    onClick={handleCopy}
+                    className="p-1 text-gray-400 hover:text-[#00AEEF] dark:text-gray-500 dark:hover:text-[#00AEEF] 
+                             rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    title="Copy message"
+                  >
+                    {hasCopied ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   For: {generatedContent.targetAudiences.join(', ')}
                 </div>

@@ -62,17 +62,30 @@ async function generateMessageForItem(item: ContentItem, showWarning: (message: 
 
   const metadataString = metadata.join('\n');
 
-  // Add prohibited phrases as instructions to avoid using them in the generated response
-  const prohibitedPhrasesInstruction = `\n\nIMPORTANT: Your response must not contain any of these phrases: ${PROHIBITED_PHRASES.join(', ')}`;
+  // Instructions for the AI
+  const instructions = `
+Instructions:
+1. Write a brief, engaging message about this content for internal communication
+2. Use a natural, conversational tone
+3. Include relevant emojis to make the message engaging
+4. Always include the URL or source reference
+5. Keep it concise and to the point
+6. Do not use any of these phrases: ${PROHIBITED_PHRASES.join(', ')}
+7. Write the message directly, without any introductions or sections
+8. Use the style of these examples:
+   - "A community member posted some nice lines about X :) Check it out: [url]"
+   - "We have been mentioned in a report that analyzed X :muscle: [url]"
+   - "Hi fellow Sprykees! :heart_hands: Here's an interesting discussion about X [url]"
+`;
 
-  const prompt = `${context}\n\nMetadata:\n${metadataString}\n\nDirective:\n${directive}${prohibitedPhrasesInstruction}\n\nContent:\n${fullContent}`;
+  const prompt = `${context}\n\nMetadata:\n${metadataString}\n\n${instructions}\n\nContent:\n${fullContent}`;
 
   // TODO: Replace with actual API call to message generation service
   return new Promise<GeneratedPost>((resolve) => 
     setTimeout(() => {
       resolve({
-        content: `Generated insight based on ${context}:\n\nAnalysis of the content shows key discussion points and themes...\n\nRelevant technical aspects include...\n\nKey takeaways:\n1. ...\n2. ...\n3. ...`,
-        targetAudiences: ['Engineering', 'Product'],
+        content: "Hey team! Check out this interesting discussion about database management in our forum :nerd_face: A community member is looking for tips on handling large DB structures with git branches. Might be relevant for our Cloud Ops and Engineering teams! :rocket: https://forum.commercequest.space/discussion/123",
+        targetAudiences: ['Engineering', 'Cloud Operations'],
         sourceItem: item,
         generatedAt: new Date().toISOString()
       });
