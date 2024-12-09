@@ -92,33 +92,33 @@ Return only the team names as a comma-separated list, nothing else.`;
 }
 
 export async function generatePost(item: ContentItem, targetAudiences: Team[]): Promise<string> {
-  const prompt = `Create a very short Slack-style message (1-2 sentences max) about this content:
+  const prompt = `Create a very short Slack-style message (1-2 sentences max) about this content specifically for the ${targetAudiences.join(' & ')} team(s):
+
 Title: ${item.title}
 Description: ${item.description}
 Source: ${item.source}
 URL: ${item.url}
 
-Target audience: ${targetAudiences.join(', ')}
-
 Guidelines:
 - Keep it extremely concise (1-2 sentences)
+- Make it specifically relevant for ${targetAudiences.join(' & ')}
+- Highlight why it matters to these specific teams
 - Use a casual, Slack-style tone
 - Include 1-2 relevant emojis
 - Include the URL at the end
 - Focus on the most important/relevant point only
-- Make it engaging but brief
 
-Example format:
-"👋 Hey team, check out this interesting discussion about X! [url]"
-"🔥 New tutorial about Y that might help with Z. [url]"
-"📢 Important update about X that affects Y. [url]"`;
+Example formats:
+"👋 Hey Cloud Ops team! Found a solution for that deployment pipeline issue we discussed last week. [url]"
+"🔧 Architecture team: Check out this approach to microservices that aligns with our current refactoring plans. [url]"
+"🚀 Engineering: Community member found a clever way to optimize those large DB operations we've been struggling with. [url]"`;
 
   try {
     console.log('Starting post generation for:', item.title);
     const response = await makeOpenRouterRequest([
       { 
         role: 'system', 
-        content: 'You are a helpful assistant that creates short, engaging Slack messages. Keep responses extremely concise.'
+        content: 'You are a helpful assistant that creates short, team-specific Slack messages. Keep responses extremely concise and relevant to the target teams.'
       },
       { role: 'user', content: prompt }
     ]);

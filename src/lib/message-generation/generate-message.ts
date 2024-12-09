@@ -12,29 +12,29 @@ function generateMockMessage(item: ContentItem, context: string): string {
     case 'vanilla-forum': {
       const metadata = item.metadata as ForumMetadata;
       if (metadata.type === 'question') {
-        return `👋 ${metadata.insertUser?.name || 'A community member'} needs help with ${item.title.toLowerCase()}. ${item.url}`;
+        return `🔧 Hey Engineering team! ${metadata.insertUser?.name || 'A community member'} needs our input on ${item.title.toLowerCase()} - looks like something we dealt with in the platform recently. ${item.url}`;
       }
-      return `💡 Check out this discussion about ${item.title.toLowerCase()} in the ${metadata.categoryName} category! ${item.url}`;
+      return `💡 Architecture team: Interesting approach to ${item.title.toLowerCase()} in the ${metadata.categoryName} category that aligns with our current initiatives. ${item.url}`;
     }
 
     case 'youtube':
     case 'youtube-search': {
       const metadata = item.metadata as YouTubeMetadata;
-      return `🎥 New video from ${metadata.channelTitle}: "${item.title}" ${item.url}`;
+      return `🎥 Product team: ${metadata.channelTitle} just covered some features we're planning - great market validation! ${item.url}`;
     }
 
     case 'rss': {
       const metadata = item.metadata as RSSMetadata;
-      return `📰 ${metadata.feedTitle || 'News update'}: ${item.title} ${item.url}`;
+      return `📰 Cloud Ops: This ${metadata.feedTitle} article addresses that scaling challenge we discussed in standup. ${item.url}`;
     }
 
     case 'bluesky': {
       const metadata = item.metadata as BlueSkyMetadata;
-      return `🔍 Interesting tech perspective from ${metadata.author.name} about PHP frameworks! ${item.url}`;
+      return `🔍 Hey Architecture team! ${metadata.author.name} shares some insights about PHP frameworks that could help with our current modernization efforts. ${item.url}`;
     }
 
     default:
-      return `📢 Check this out: ${item.title} ${item.url}`;
+      return `📢 Team, this directly relates to our current sprint goals: ${item.title} ${item.url}`;
   }
 }
 
