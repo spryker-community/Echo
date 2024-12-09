@@ -25,6 +25,8 @@ const transporter = createTransport({
 // Validate email domain
 function isAllowedDomain(email: string): boolean {
   const domain = email.split('@')[1].toLowerCase();
+  console.log('Email domain:', domain);
+  console.log('Allowed domains:', ALLOWED_DOMAINS);
   return ALLOWED_DOMAINS.includes(domain);
 }
 
@@ -39,11 +41,14 @@ function generateMagicLink(email: string): string {
     { algorithm: 'HS256' }
   );
   
-  return `${SITE_URL}/auth/verify?token=${encodeURIComponent(token)}`;
+  const magicLink = `${SITE_URL}/auth/verify?token=${encodeURIComponent(token)}`;
+  console.log('Magic link generated:', magicLink);
+  return magicLink;
 }
 
 // Send magic link email
 async function sendMagicLinkEmail(email: string, magicLink: string) {
+  console.log('Sending magic link email to:', email);
   await transporter.sendMail({
     from: SMTP_USER,
     to: email,
@@ -66,6 +71,7 @@ async function sendMagicLinkEmail(email: string, magicLink: string) {
       </div>
     `,
   });
+  console.log('Magic link email sent to:', email);
 }
 
 export const handler: Handler = async (event) => {
@@ -120,6 +126,7 @@ export const handler: Handler = async (event) => {
 
     // Validate email domain
     if (!isAllowedDomain(email)) {
+      console.error('Email domain not allowed:', email.split('@')[1]);
       return {
         statusCode: 403,
         headers,
