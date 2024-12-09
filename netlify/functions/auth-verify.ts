@@ -21,6 +21,9 @@ const createErrorResponse = (origin: string, message: string) => ({
 });
 
 export const handler: Handler = async (event) => {
+  // Initial log to capture the start of the request
+  console.log('Auth verification handler invoked');
+  
   // Get the origin from the request headers or use the SITE_URL
   const origin = event.headers.origin || SITE_URL;
   const url = new URL(origin);
@@ -103,6 +106,9 @@ export const handler: Handler = async (event) => {
         maxAge: 7 * 24 * 60 * 60,
         cookieLength: cookieHeader.length,
       });
+
+      // Delay before redirect to allow log capture
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Return redirect with cookie
       const response = {
