@@ -73,6 +73,7 @@ export const handler: Handler = async (event) => {
 
         // Check if the email domain is allowed
         const emailDomain = decoded.email.split('@')[1];
+        console.log('Email domain:', emailDomain);
         if (!ALLOWED_DOMAINS.includes(emailDomain)) {
           console.error('Email domain not allowed:', emailDomain);
           return createErrorResponse(origin, 'Email domain not allowed');
