@@ -1,6 +1,8 @@
 import { ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import DOMPurify from 'dompurify';
+import createDOMPurify from 'dompurify';
+
+const DOMPurify = createDOMPurify(window);
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -55,28 +57,24 @@ export function formatForumContent(html: string): string {
   let content = decodeHtmlEntities(html);
 
   // Define allowed HTML tags and attributes
-  const allowedTags = [
-    'p', 'br', 'div', 'span', 
-    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'ul', 'ol', 'li',
-    'blockquote', 'pre', 'code',
-    'strong', 'em', 'i', 'b',
-    'a', 'img',
-    'table', 'thead', 'tbody', 'tr', 'th', 'td'
-  ];
-
-  const allowedAttributes = {
-    a: ['href', 'title', 'target', 'rel'],
-    img: ['src', 'alt', 'title', 'width', 'height'],
-    '*': ['class', 'id']
+  const config = {
+    ALLOWED_TAGS: [
+      'p', 'br', 'div', 'span', 
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'ul', 'ol', 'li',
+      'blockquote', 'pre', 'code',
+      'strong', 'em', 'i', 'b',
+      'a', 'img',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td'
+    ],
+    ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'src', 'alt', 'width', 'height', 'class', 'id'],
+    ALLOW_DATA_ATTR: false,
+    RETURN_DOM_FRAGMENT: false,
+    RETURN_DOM: false
   };
 
   // Sanitize HTML content
-  content = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: allowedTags,
-    ALLOWED_ATTR: allowedAttributes,
-    ALLOW_DATA_ATTR: false
-  });
+  content = DOMPurify.sanitize(content, config);
 
   // Add Tailwind classes to elements
   content = content
