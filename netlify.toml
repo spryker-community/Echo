@@ -11,10 +11,49 @@
   framework = "#custom"
   autoLaunch = true
 
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = ":url"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Credentials = "true"
+
+[[redirects]]
+  from = "/.netlify/functions/auth-verify"
+  to = "/.netlify/functions/auth-verify"
+  status = 200
+  force = true
+  [redirects.headers]
+    Access-Control-Allow-Origin = ":url"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Credentials = "true"
+
+[[redirects]]
+  from = "/auth/verify"
+  to = "/index.html"
+  status = 200
+  force = true
+  [redirects.headers]
+    Access-Control-Allow-Credentials = "true"
+
 [[redirects]]
   from = "/auth/*"
   to = "/index.html"
   status = 200
+  force = true
+  [redirects.headers]
+    Access-Control-Allow-Credentials = "true"
 
 [[redirects]]
   from = "/*"

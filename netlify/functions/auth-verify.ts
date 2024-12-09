@@ -3,6 +3,8 @@ import * as jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || '';
 const SITE_URL = process.env.URL || 'http://localhost:8888';
+const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN || '';
+const IS_PROD = process.env.CONTEXT === 'production';
 
 interface JWTPayload {
   email: string;
@@ -10,11 +12,15 @@ interface JWTPayload {
 }
 
 export const handler: Handler = async (event) => {
-  // Enable CORS
+  // Get the origin from the request headers or use the SITE_URL
+  const origin = event.headers.origin || SITE_URL;
+
+  // Enable CORS with credentials
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Credentials': 'true',
     'Content-Type': 'application/json',
   };
 
@@ -30,10 +36,10 @@ export const handler: Handler = async (event) => {
   // Only allow GET requests
   if (event.httpMethod !== 'GET') {
     return {
-      statusCode: 405,
+      statusCode: 302,
       headers: {
         ...headers,
-        'Location': `${SITE_URL}/auth/error?message=${encodeURIComponent('Method not allowed')}`,
+        'Location': `${origin}/auth/error?message=${encodeURIComponent('Method not allowed')}`,
       },
       body: JSON.stringify({ error: 'Method not allowed' }),
     };
@@ -48,7 +54,7 @@ export const handler: Handler = async (event) => {
         statusCode: 302,
         headers: {
           ...headers,
-          'Location': `${SITE_URL}/auth/error?message=${encodeURIComponent('No token provided')}`,
+          'Location': `${origin}/auth/error?message=${encodeURIComponent('No token provided')}`,
         },
         body: JSON.stringify({ error: 'No token provided' }),
       };
@@ -68,15 +74,40 @@ export const handler: Handler = async (event) => {
       );
 
       // Create cookie header
-      const cookieHeader = `auth=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`;
+      const cookieOptions = [
+        `auth=${sessionToken}`,
+        'Path=/',
+        IS_PROD ? 'Secure' : '',
+        'HttpOnly',
+        'SameSite=Lax',
+        `Max-Age=${7 * 24 * 60 * 60}`,
+      ];
+
+      // Add domain if configured
+      if (COOKIE_DOMAIN) {
+        cookieOptions.push(`Domain=${COOKIE_DOMAIN}`);
+      }
+
+      const cookieHeader = cookieOptions.filter(Boolean).join('; ');
+
+      // Log cookie details for debugging
+      console.log('Cookie configuration:', {
+        isProd: IS_PROD,
+        domain: COOKIE_DOMAIN || 'not set',
+        origin,
+        cookieHeader,
+      });
 
       // Redirect to app with session token
       return {
         statusCode: 302,
         headers: {
           ...headers,
-          'Location': SITE_URL,
+          'Location': origin,
           'Set-Cookie': cookieHeader,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
         },
         body: JSON.stringify({ message: 'Authentication successful' }),
       };
@@ -87,7 +118,7 @@ export const handler: Handler = async (event) => {
         statusCode: 302,
         headers: {
           ...headers,
-          'Location': `${SITE_URL}/auth/error?message=${encodeURIComponent('Invalid or expired token')}`,
+          'Location': `${origin}/auth/error?message=${encodeURIComponent('Invalid or expired token')}`,
         },
         body: JSON.stringify({ error: 'Invalid or expired token' }),
       };
@@ -98,7 +129,7 @@ export const handler: Handler = async (event) => {
       statusCode: 302,
       headers: {
         ...headers,
-        'Location': `${SITE_URL}/auth/error?message=${encodeURIComponent('Internal server error')}`,
+        'Location': `${origin}/auth/error?message=${encodeURIComponent('Internal server error')}`,
       },
       body: JSON.stringify({ error: 'Internal server error' }),
     };
