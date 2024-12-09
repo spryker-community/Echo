@@ -4,6 +4,23 @@ import { fetchDiscussionComments } from '../lib/api/forum';
 import { useToast } from './useToast';
 import { PROHIBITED_PHRASES, isContentProhibited } from '../config/prohibited-phrases';
 
+// Custom error type for warnings
+interface WarningError {
+  type: 'warning';
+  message: string;
+}
+
+function isWarningError(error: unknown): error is WarningError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'type' in error &&
+    error.type === 'warning' &&
+    'message' in error &&
+    typeof error.message === 'string'
+  );
+}
+
 // YouTube-specific content analysis helpers
 function extractVideoKeywords(title: string, description: string): string[] {
   const keywords = new Set<string>();
@@ -206,7 +223,11 @@ async function generateMessageForItem(item: ContentItem): Promise<GeneratedPost>
         context = `${context} with ${comments.length} comments`;
       } catch (error) {
         console.error('[Message Generation] Error fetching comments:', error);
-        throw new Error('Could not fetch all comments for complete context');
+        // Instead of throwing, just show a warning and continue
+        throw {
+          type: 'warning' as const,
+          message: 'Could not fetch discussion comments. Proceeding with available context.'
+        } satisfies WarningError;
       }
     }
   } else if (item.source === 'youtube') {
@@ -296,6 +317,20 @@ export function useMessageGeneration() {
     mutationFn: generateMessageForItem,
     onError: (error) => {
       console.error('[Message Generation] Error:', error);
+      
+      // Check if this is a warning about comments
+      if (isWarningError(error)) {
+        showToast({
+          title: 'Warning',
+          description: error.message,
+          // Using 'destructive' for warning since 'warning' is not a valid variant
+          variant: 'destructive',
+        });
+        // Continue with message generation
+        return;
+      }
+
+      // For other errors, show error toast
       showToast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to generate message. Please try again.',

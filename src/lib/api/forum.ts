@@ -88,7 +88,7 @@ export async function fetchDiscussionComments(discussionId: string): Promise<For
     console.log('[FORUM API] Fetching comments for discussion:', discussionId);
     
     // Use the correct API v2 endpoint for comments with discussionID query parameter
-    const response = await axios.get<{ data: ForumComment[] }>(
+    const response = await axios.get<ForumComment[]>(
       `${import.meta.env.VITE_FORUM_API_URL}/api/v2/comments`,
       {
         params: {
@@ -101,8 +101,8 @@ export async function fetchDiscussionComments(discussionId: string): Promise<For
       }
     );
 
-    // Extract comments from the data property
-    const comments = response.data.data;
+    // Comments are returned directly as an array
+    const comments = response.data;
     console.log(`[FORUM API] Fetched ${comments.length} comments for discussion ${discussionId}`);
 
     return comments.map(comment => ({
