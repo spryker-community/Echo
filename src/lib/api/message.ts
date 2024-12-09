@@ -1,6 +1,5 @@
 import { ContentItem, Team } from '../../types';
 import { teams } from '../../config/teams';
-import { PROHIBITED_PHRASES } from '../../config/prohibited-phrases';
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
@@ -93,7 +92,7 @@ Return only the team names as a comma-separated list, nothing else.`;
 }
 
 export async function generatePost(item: ContentItem, targetAudiences: Team[]): Promise<string> {
-  const prompt = `Create an engaging internal post about this community content:
+  const prompt = `Create a very short Slack-style message (1-2 sentences max) about this content:
 Title: ${item.title}
 Description: ${item.description}
 Source: ${item.source}
@@ -102,23 +101,24 @@ URL: ${item.url}
 Target audience: ${targetAudiences.join(', ')}
 
 Guidelines:
-- Keep it concise and engaging
-- Include relevant emojis
-- Maintain a friendly, informal tone
-- Include the URL
-- Highlight why it's relevant for the target audience
+- Keep it extremely concise (1-2 sentences)
+- Use a casual, Slack-style tone
+- Include 1-2 relevant emojis
+- Include the URL at the end
+- Focus on the most important/relevant point only
+- Make it engaging but brief
 
-Note: The following phrases should be avoided in AI-generated content: ${PROHIBITED_PHRASES.join(', ')}
-
-Format the post in a way that's ready to be copied and shared internally.`;
+Example format:
+"👋 Hey team, check out this interesting discussion about X! [url]"
+"🔥 New tutorial about Y that might help with Z. [url]"
+"📢 Important update about X that affects Y. [url]"`;
 
   try {
     console.log('Starting post generation for:', item.title);
     const response = await makeOpenRouterRequest([
       { 
         role: 'system', 
-        content: 'You are a helpful assistant that creates engaging internal posts about community content. ' +
-                 'Write in a natural, conversational tone while avoiding common AI filler phrases and unprofessional language.'
+        content: 'You are a helpful assistant that creates short, engaging Slack messages. Keep responses extremely concise.'
       },
       { role: 'user', content: prompt }
     ]);
