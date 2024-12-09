@@ -35,13 +35,14 @@ function generateToken(email: string): string {
       email,
       exp: Math.floor(Date.now() / 1000) + (15 * 60), // 15 minutes
     },
-    JWT_SECRET
+    JWT_SECRET,
+    { algorithm: 'HS256' }
   );
 }
 
 // Send magic link email
 async function sendMagicLinkEmail(email: string, token: string) {
-  const magicLink = `${SITE_URL}/auth/verify?token=${token}`;
+  const magicLink = `${SITE_URL}/auth/verify?token=${encodeURIComponent(token)}`;
   
   await transporter.sendMail({
     from: SMTP_USER,
@@ -89,11 +90,21 @@ export const handler: Handler = async (event) => {
     return {
       statusCode: 405,
       headers,
-      body: 'Method not allowed',
+      body: JSON.stringify({ error: 'Method not allowed' }),
     };
   }
 
   try {
+    // Check JWT_SECRET
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET is not set');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Server configuration error' }),
+      };
+    }
+
     // Parse request body
     const { email } = JSON.parse(event.body || '{}');
 
@@ -102,7 +113,7 @@ export const handler: Handler = async (event) => {
       return {
         statusCode: 400,
         headers,
-        body: 'Email is required',
+        body: JSON.stringify({ error: 'Email is required' }),
       };
     }
 
@@ -111,25 +122,31 @@ export const handler: Handler = async (event) => {
       return {
         statusCode: 403,
         headers,
-        body: 'Email domain not allowed. Please use your @spryker.com email address.',
+        body: JSON.stringify({ error: 'Email domain not allowed. Please use your @spryker.com email address.' }),
       };
     }
 
     // Generate and send magic link
     const token = generateToken(email);
+    console.log('Generated token for email:', email);
+
     await sendMagicLinkEmail(email, token);
+    console.log('Magic link email sent to:', email);
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({ message: 'Magic link sent' }),
     };
-  } catch (error) {
-    console.error('Auth request error:', error);
+  } catch (error: any) {
+    console.error('Auth request error:', {
+      error: error.message,
+      stack: error.stack,
+    });
     return {
       statusCode: 500,
       headers,
-      body: 'Internal server error',
+      body: JSON.stringify({ error: 'Internal server error' }),
     };
   }
 };

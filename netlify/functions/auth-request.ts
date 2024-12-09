@@ -35,10 +35,11 @@ function generateMagicLink(email: string): string {
       email,
       exp: Math.floor(Date.now() / 1000) + (15 * 60), // 15 minutes
     },
-    JWT_SECRET
+    JWT_SECRET,
+    { algorithm: 'HS256' }
   );
   
-  return `${SITE_URL}/auth/verify?token=${token}`;
+  return `${SITE_URL}/auth/verify?token=${encodeURIComponent(token)}`;
 }
 
 // Send magic link email
@@ -95,6 +96,16 @@ export const handler: Handler = async (event) => {
   }
 
   try {
+    // Check JWT_SECRET
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET is not set');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Server configuration error' }),
+      };
+    }
+
     // Parse request body
     const { email } = JSON.parse(event.body || '{}');
 
@@ -117,16 +128,23 @@ export const handler: Handler = async (event) => {
     }
 
     // Generate and send magic link
+    console.log('Generating magic link for email:', email);
     const magicLink = generateMagicLink(email);
+    console.log('Magic link generated (length):', magicLink.length);
+
     await sendMagicLinkEmail(email, magicLink);
+    console.log('Magic link email sent to:', email);
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({ message: 'Magic link sent' }),
     };
-  } catch (error) {
-    console.error('Auth request error:', error);
+  } catch (error: any) {
+    console.error('Auth request error:', {
+      error: error.message,
+      stack: error.stack,
+    });
     return {
       statusCode: 500,
       headers,
