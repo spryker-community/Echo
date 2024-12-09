@@ -1,5 +1,6 @@
 import { ContentItem, Team } from '../../types';
 import { teams } from '../../config/teams';
+import { PROHIBITED_PHRASES } from '../../config/prohibited-phrases';
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
@@ -41,19 +42,18 @@ async function makeOpenRouterRequest(messages: Array<{ role: string; content: st
       body: JSON.stringify(requestBody),
     });
 
-    console.log('OpenRouter API Response Status:', response.status);
-
-    const responseText = await response.text();
-    console.log('OpenRouter API Response:', responseText);
-
     if (!response.ok) {
-      throw new Error(`OpenRouter API request failed: ${response.status} ${response.statusText} - ${responseText}`);
+      const errorText = await response.text();
+      console.error('OpenRouter API Error Response:', errorText);
+      throw new Error(`OpenRouter API request failed: ${response.status} ${response.statusText}`);
     }
 
-    return JSON.parse(responseText);
+    const responseData = await response.json();
+    console.log('OpenRouter API Response:', responseData);
+    return responseData;
   } catch (error) {
     console.error('OpenRouter API Error:', error);
-    throw error;
+    throw new Error('Failed to generate message. Please try again.');
   }
 }
 
@@ -108,12 +108,18 @@ Guidelines:
 - Include the URL
 - Highlight why it's relevant for the target audience
 
+Note: The following phrases should be avoided in AI-generated content: ${PROHIBITED_PHRASES.join(', ')}
+
 Format the post in a way that's ready to be copied and shared internally.`;
 
   try {
     console.log('Starting post generation for:', item.title);
     const response = await makeOpenRouterRequest([
-      { role: 'system', content: 'You are a helpful assistant that creates engaging internal posts about community content.' },
+      { 
+        role: 'system', 
+        content: 'You are a helpful assistant that creates engaging internal posts about community content. ' +
+                 'Write in a natural, conversational tone while avoiding common AI filler phrases and unprofessional language.'
+      },
       { role: 'user', content: prompt }
     ]);
 

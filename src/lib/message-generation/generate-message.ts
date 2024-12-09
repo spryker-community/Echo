@@ -5,36 +5,7 @@ import { analyzeRSSContent, getRSSMessageDirective } from './rss';
 import { generateBlueSkyMessage } from './bluesky';
 import { determineTargetAudiences } from './target-audiences';
 import { fetchDiscussionComments } from '../api/forum';
-
-function generateMockMessage(item: ContentItem, context: string): string {
-  switch (item.source) {
-    case 'vanilla-forum': {
-      const metadata = item.metadata as ForumMetadata;
-      if (metadata.type === 'question') {
-        return `Hey team! 👋 Check out this ${metadata.status || 'open'} question about ${item.title.toLowerCase()} :nerd_face: ${metadata.insertUser?.name || 'A community member'} is looking for help. Might be relevant for our ${metadata.categoryName} folks! ${item.url}`;
-      }
-      return `Interesting discussion in our forum about ${item.title.toLowerCase()} :thinking: ${metadata.insertUser?.name || 'A community member'} shared some insights in the ${metadata.categoryName} category. Worth checking out! ${item.url}`;
-    }
-
-    case 'youtube':
-    case 'youtube-search': {
-      const metadata = item.metadata as YouTubeMetadata;
-      return `New video alert! 🎥 ${metadata.channelTitle} just posted "${item.title}". Great content for anyone interested in ${item.description.split('.')[0].toLowerCase()}! ${item.url}`;
-    }
-
-    case 'rss': {
-      const metadata = item.metadata as RSSMetadata;
-      return `📰 ${metadata.feedTitle || 'News update'}: ${item.title}. ${item.description.split('.')[0]}. Check it out: ${item.url}`;
-    }
-
-    case 'bluesky': {
-      return generateBlueSkyMessage(item.description, item.metadata, item.url);
-    }
-
-    default:
-      return `Check out this interesting update: ${item.title} ${item.url}`;
-  }
-}
+import { generatePost } from '../api/message';
 
 export async function generateMessageForItem(
   item: ContentItem,
@@ -82,29 +53,15 @@ export async function generateMessageForItem(
     ];
   }
 
-  const metadataString = metadata.join('\n');
+  // Determine target audiences
+  const targetAudiences = determineTargetAudiences(item);
 
-  // Instructions for the AI
-  const instructions = `
-Instructions:
-1. Write a brief, engaging message about this content for internal communication
-2. Use a natural, conversational tone
-3. Include relevant emojis to make the message engaging
-4. Always include the URL or source reference
-5. Keep it concise and to the point
-6. Write the message directly, without any introductions or sections
-7. Use the style of these examples:
-   - "A community member posted some nice lines about X :) Check it out: [url]"
-   - "We have been mentioned in a report that analyzed X :muscle: [url]"
-   - "Hi fellow Sprykees! :heart_hands: Here's an interesting discussion about X [url]"
-`;
+  // Generate the message using the OpenRouter API
+  const content = await generatePost(item, targetAudiences);
 
-  const prompt = `${context}\n\nMetadata:\n${metadataString}\n\n${instructions}\n\nContent:\n${fullContent}`;
-
-  // TODO: Replace with actual API call to message generation service
   return {
-    content: generateMockMessage(item, context),
-    targetAudiences: determineTargetAudiences(item),
+    content,
+    targetAudiences,
     sourceItem: item,
     generatedAt: new Date().toISOString()
   };

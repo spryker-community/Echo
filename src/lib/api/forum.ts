@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { decodeHtmlEntities } from '../utils';
+import { formatForumContent } from '../utils';
 import type { DiscussionStatus, DiscussionType } from '../../types';
 
 interface ForumUser {
@@ -87,7 +87,6 @@ export async function fetchDiscussionComments(discussionId: string): Promise<For
   try {
     console.log('[FORUM API] Fetching comments for discussion:', discussionId);
     
-    // Use the correct API v2 endpoint for comments with discussionID query parameter
     const response = await axios.get<ForumComment[]>(
       `${import.meta.env.VITE_FORUM_API_URL}/api/v2/comments`,
       {
@@ -101,13 +100,13 @@ export async function fetchDiscussionComments(discussionId: string): Promise<For
       }
     );
 
-    // Comments are returned directly as an array
     const comments = response.data;
     console.log(`[FORUM API] Fetched ${comments.length} comments for discussion ${discussionId}`);
 
     return comments.map(comment => ({
       ...comment,
-      body: decodeHtmlEntities(comment.body?.replace(/<[^>]*>/g, '') || '')
+      // Format comment body with preserved HTML
+      body: formatForumContent(comment.body || '')
     }));
   } catch (error) {
     console.error('[FORUM API] Error fetching comments:', error);
@@ -146,7 +145,8 @@ export async function fetchDiscussions(): Promise<ForumDiscussion[]> {
 
       return {
         ...discussion,
-        body: decodeHtmlEntities(discussion.body?.replace(/<[^>]*>/g, '') || ''),
+        // Format discussion body with preserved HTML
+        body: formatForumContent(discussion.body || ''),
         status,
         type
       };

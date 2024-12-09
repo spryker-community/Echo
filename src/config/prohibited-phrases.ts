@@ -1,3 +1,5 @@
+// This list is only used as context for the AI message generation,
+// NOT for filtering any content
 export const PROHIBITED_PHRASES = [
   // Offensive language
   'fuck', 'shit', 'bitch', 'cunt', 
@@ -50,10 +52,3 @@ export const PROHIBITED_PHRASES = [
   'Gossamer', 'Enigma', 'Whispering', 'Sights unseen', 'Sounds unheard', 
   'Indelible', 'My friend', 'In conclusion', 'my friend'
 ];
-
-export function isContentProhibited(text: string): boolean {
-  const lowerText = text.toLowerCase();
-  return PROHIBITED_PHRASES.some(phrase => 
-    lowerText.includes(phrase.toLowerCase())
-  );
-}
