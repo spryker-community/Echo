@@ -94,11 +94,11 @@ function VerifyAuth() {
         console.log('Starting token verification');
         setVerificationStatus('Verifying token...');
 
-        // Pass token as query parameter and follow redirects
+        // Allow redirects and include credentials
         const response = await fetch(`/.netlify/functions/auth-verify?token=${encodeURIComponent(token)}`, {
           method: 'GET',
           credentials: 'include',
-          redirect: 'manual', // Don't follow redirects automatically
+          redirect: 'follow', // Allow redirects
         });
 
         console.log('Verification response:', {
@@ -108,21 +108,15 @@ function VerifyAuth() {
           url: response.url,
         });
 
-        // Check if we got a redirect
-        if (response.status === 302) {
+        if (response.ok) {
           setVerificationStatus('Verification successful, redirecting...');
-          // Get the redirect location
-          const location = response.headers.get('Location');
-          if (location) {
-            console.log('Redirecting to:', location);
-            // Use window.location.replace for a full page reload
-            window.location.replace(location);
-          } else {
-            console.log('Redirecting to root');
-            window.location.replace('/');
-          }
+          // Add a small delay to ensure cookie is set
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Use navigate instead of window.location for a smoother experience
+          navigate('/', { replace: true });
         } else {
-          console.error('Unexpected response:', response.status);
+          const errorData = await response.text();
+          console.error('Verification failed:', errorData);
           setVerificationStatus('Failed to verify authentication token');
           navigate('/auth/error', { 
             replace: true,
@@ -162,12 +156,13 @@ function MainContent() {
   const navigate = useNavigate();
 
   const handleSignOut = () => {
-    // Clear the auth cookie
+    // Clear the auth cookie for both domains
     document.cookie = 'auth=; Path=/; Domain=.commercequest.space; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;';
+    document.cookie = 'auth=; Path=/; Domain=echo.commercequest.space; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;';
     document.cookie = 'auth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;';
     
-    // Use window.location.replace for a full page reload
-    window.location.replace('/auth/login');
+    // Navigate to login
+    navigate('/auth/login', { replace: true });
   };
 
   return (
