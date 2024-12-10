@@ -25,7 +25,7 @@
   [headers.values]
     Access-Control-Allow-Origin = "https://echo.commercequest.space"
     Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
-    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept"
     Access-Control-Allow-Credentials = "true"
     Access-Control-Max-Age = "86400"
 
