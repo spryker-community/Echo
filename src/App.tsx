@@ -4,11 +4,8 @@ import { SourceFilter } from './components/source-filter';
 import { ThemeToggle } from './components/ThemeToggle';
 import { FeedViewer } from './components/FeedViewer';
 import { Toaster } from './components/ui/toaster';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useToast } from './hooks/useToast';
-
-// Create a client
-const queryClient = new QueryClient();
+import { LogOut } from 'lucide-react';
 
 // Password protection component
 function RequirePassword({ children }: { children: React.ReactNode }) {
@@ -111,6 +108,17 @@ function PasswordPage({ onAuthenticated }: { onAuthenticated: () => void }) {
 
 // Main content component
 function MainContent() {
+  const { showToast } = useToast();
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAuthenticated');
+    showToast({
+      title: "Logged Out",
+      description: "You have been logged out successfully.",
+    });
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-[#011427] transition-colors">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -129,8 +137,20 @@ function MainContent() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center -my-2">
             <ThemeToggle />
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center justify-center h-9 px-3 rounded-lg
+                       text-gray-500 hover:text-[#EC008C] 
+                       dark:text-gray-400 dark:hover:text-[#EC008C] 
+                       hover:bg-gray-100/50 dark:hover:bg-gray-800/50
+                       transition-all duration-200"
+              aria-label="Logout"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="ml-1.5 text-sm font-medium">Logout</span>
+            </button>
           </div>
         </header>
         <main className="space-y-8">
@@ -144,21 +164,19 @@ function MainContent() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <RequirePassword>
-                <MainContent />
-              </RequirePassword>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <Toaster />
-      </Router>
-    </QueryClientProvider>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <RequirePassword>
+              <MainContent />
+            </RequirePassword>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <Toaster />
+    </Router>
   );
 }
