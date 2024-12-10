@@ -81,23 +81,10 @@ Project plan: see /project_briefing.md
 - [ ] add RSS switches/toggles to the existing frontend Content Sources block
 
 ### 5. Authentication Implementation 🚧
-- [x] Implement magic link authentication flow
-- [x] Create auth-request endpoint for initiating authentication
-- [x] Create auth-magic-link endpoint for sending emails
-- [x] Create auth-verify endpoint for token verification
-- [x] Add client-side authentication handling
 - [x] Implement protected routes
-- [x] Add login page and error page
-- [ ] Debug and fix token verification issues
-  - [ ] Validate JWT_SECRET configuration
-  - [ ] Verify ALLOWED_DOMAINS setting
-  - [ ] Fix cookie domain issues
-  - [ ] Test complete authentication flow
-- [ ] Add session management
-  - [ ] Implement proper cookie handling
-  - [ ] Add session refresh mechanism
-  - [ ] Add logout functionality
-- [ ] Add authentication documentation
+- [x] Add login page with password form
+- [x] Add session persistence using localStorage
+- [x] Test complete authentication flow
 
 ## Phase 4 - Polish & Testing (Week 7-8)
 
