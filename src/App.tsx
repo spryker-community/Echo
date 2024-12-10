@@ -28,7 +28,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
       
       if (!authCookie) {
         console.log('No auth cookie found, check count:', checkCount);
-        if (checkCount < 3) {
+        if (checkCount < 5) { // Increased from 3 to 5 checks
           // If we haven't checked many times yet, keep checking
           setCheckCount(prev => prev + 1);
           setIsAuthenticated(null);
@@ -59,12 +59,12 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
     checkAuth();
 
     // If not authenticated and haven't checked many times, check again after a short delay
-    const timer = !isAuthenticated && checkCount < 3 ? 
+    const timer = !isAuthenticated && checkCount < 5 ? // Increased from 3 to 5 checks
       setTimeout(checkAuth, 1000) : // Check again after 1 second
       setInterval(checkAuth, 60000); // Regular interval check
 
     return () => {
-      if (!isAuthenticated && checkCount < 3) {
+      if (!isAuthenticated && checkCount < 5) { // Increased from 3 to 5 checks
         clearTimeout(timer);
       } else {
         clearInterval(timer);
@@ -99,6 +99,7 @@ function VerifyAuth() {
   const navigate = useNavigate();
   const token = searchParams.get('token');
   const [verificationStatus, setVerificationStatus] = React.useState('Initializing verification...');
+  const [retryCount, setRetryCount] = React.useState(0);
 
   React.useEffect(() => {
     async function verifyToken() {
@@ -116,11 +117,10 @@ function VerifyAuth() {
         console.log('Starting token verification');
         setVerificationStatus('Verifying token...');
 
-        // Pass token as query parameter and allow redirects
         const response = await fetch(`/.netlify/functions/auth-verify?token=${encodeURIComponent(token)}`, {
           method: 'GET',
           credentials: 'include',
-          redirect: 'follow', // Allow redirects
+          redirect: 'follow',
         });
 
         console.log('Verification response:', {
@@ -130,11 +130,35 @@ function VerifyAuth() {
           url: response.url,
         });
 
+        // Handle 502 error differently as it might still be successful
+        if (response.status === 502 && retryCount < 3) {
+          console.log('Got 502, waiting before checking auth cookie...');
+          setVerificationStatus('Completing authentication...');
+          
+          // Wait for a moment to allow cookie to be set
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Check if we have the auth cookie despite the 502
+          const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+          const authCookie = cookies.find(cookie => cookie.startsWith('auth='));
+          
+          if (authCookie) {
+            console.log('Found auth cookie after 502, proceeding to dashboard');
+            navigate('/dashboard', { replace: true });
+            return;
+          }
+          
+          // If no cookie found, retry the verification
+          setRetryCount(prev => prev + 1);
+          setVerificationStatus('Retrying verification...');
+          verifyToken();
+          return;
+        }
+
         if (response.ok || response.status === 302) {
           setVerificationStatus('Verification successful, redirecting...');
           // Add a small delay to ensure cookie is set
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          // Use navigate to go to the dashboard
+          await new Promise(resolve => setTimeout(resolve, 2000));
           navigate('/dashboard', { replace: true });
         } else {
           console.error('Verification failed:', response.status);
@@ -155,7 +179,7 @@ function VerifyAuth() {
     }
 
     verifyToken();
-  }, [token, navigate]);
+  }, [token, navigate, retryCount]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#011427]">
