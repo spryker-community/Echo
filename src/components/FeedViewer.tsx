@@ -38,7 +38,7 @@ export function FeedViewer() {
                     dark:from-[#011427]/80 dark:via-[#011427]/70 dark:to-[#011427]/60 
                     rounded-xl p-12 text-center backdrop-blur-sm
                     border border-gray-100/50 dark:border-gray-700/50
-                    shadow-sm">
+                    shadow-sm font-manrope">
         <p className="text-gray-500 dark:text-gray-400">
           No content to display. Try enabling more sources or refreshing the content.
         </p>
@@ -52,7 +52,7 @@ export function FeedViewer() {
                     dark:from-[#011427]/80 dark:via-[#011427]/70 dark:to-[#011427]/60 
                     rounded-xl p-12 text-center backdrop-blur-sm
                     border border-gray-100/50 dark:border-gray-700/50
-                    shadow-sm">
+                    shadow-sm font-manrope">
         <p className="text-gray-500 dark:text-gray-400">
           All posts are currently hidden. Use the "Show Hidden" button above to restore them.
         </p>

@@ -43,7 +43,8 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
   return (
     <Card className="group w-full bg-gradient-to-br from-white via-white to-gray-50/30 dark:from-[#011427]/80 dark:via-[#011427]/70 dark:to-[#011427]/60 
                     shadow-lg hover:shadow-xl rounded-xl overflow-hidden transition-all duration-300 
-                    border border-gray-100/50 dark:border-gray-700/50">
+                    border border-gray-100/50 dark:border-gray-700/50
+                    font-manrope">
       <CardHeader className="p-6 pb-4">
         <div className="flex items-start gap-4">
           {isYouTubeContent && item.image && (
@@ -64,7 +65,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
                 />
                 <div className="min-w-0 flex-grow">
                   <CardTitle className="text-xl font-bold text-gray-900 dark:text-white hover:text-[#00AEEF] 
-                                    transition-colors duration-200 truncate leading-tight mb-2">
+                                    transition-colors duration-200 truncate leading-tight mb-2 font-replica">
                     <a 
                       href={item.url} 
                       target="_blank" 
@@ -89,7 +90,7 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
                 title="Hide post"
                 aria-label="Hide post"
               >
-                <X className="w-5 h-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -109,7 +110,8 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
                      prose-blockquote:border-l-4 prose-blockquote:border-gray-200/50 dark:prose-blockquote:border-gray-700/50
                      prose-blockquote:pl-4 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400
                      prose-ul:list-disc prose-ul:pl-5 prose-ol:list-decimal prose-ol:pl-5
-                     prose-li:text-gray-700 dark:prose-li:text-gray-300"
+                     prose-li:text-gray-700 dark:prose-li:text-gray-300
+                     prose-headings:font-replica"
             dangerouslySetInnerHTML={{ __html: item.description }}
           />
         ) : (

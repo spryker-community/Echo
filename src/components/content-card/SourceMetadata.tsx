@@ -35,7 +35,7 @@ export function SourceMetadata({ source, metadata }: SourceMetadataProps) {
       const hasNewActivity = dateLastComment && new Date(dateLastComment) > new Date(metadata.date);
       
       return (
-        <div className="flex flex-col space-y-2">
+        <div className="flex flex-col space-y-2 font-manrope">
           <div className="flex items-center flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400">
             {insertUser && (
               <div className="flex items-center gap-1 min-w-0">
@@ -95,14 +95,14 @@ export function SourceMetadata({ source, metadata }: SourceMetadataProps) {
     case 'youtube':
     case 'youtube-search':
       return (
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-manrope">
           <span className="font-medium">{metadata.channelTitle}</span>
         </div>
       );
 
     case 'bluesky':
       return (
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-manrope">
           <div className="flex items-center gap-1">
             {metadata.author.avatar ? (
               <img 
@@ -133,7 +133,7 @@ export function SourceMetadata({ source, metadata }: SourceMetadataProps) {
 
     case 'rss':
       return (
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-manrope">
           <span className="font-medium">{metadata.feedTitle || 'RSS Feed'}</span>
           {metadata.categories && metadata.categories.length > 0 && (
             <>

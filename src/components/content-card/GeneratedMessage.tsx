@@ -46,11 +46,11 @@ export function GeneratedMessage({ content, targetAudiences, onUpdate }: Generat
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-manrope">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h4 className="text-base font-semibold bg-gradient-to-r from-[#00AEEF] to-[#EC008C] 
-                       text-transparent bg-clip-text">
+                       text-transparent bg-clip-text font-replica">
             Generated Message
           </h4>
           <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
@@ -118,12 +118,12 @@ export function GeneratedMessage({ content, targetAudiences, onUpdate }: Generat
             >
               {hasCopied ? (
                 <>
-                  <Check className="w-5 h-5" />
+                  <Check className="w-4 h-4" />
                   <span className="text-sm font-medium">Copied</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-5 h-5" />
+                  <Copy className="w-4 h-4" />
                   <span className="text-sm font-medium">Copy</span>
                 </>
               )}
@@ -135,7 +135,7 @@ export function GeneratedMessage({ content, targetAudiences, onUpdate }: Generat
                        hover:shadow-lg"
               title="Edit message"
             >
-              <Edit2 className="w-5 h-5" />
+              <Edit2 className="w-4 h-4" />
               <span className="text-sm font-medium">Edit</span>
             </button>
           </div>
