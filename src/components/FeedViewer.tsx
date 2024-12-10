@@ -3,7 +3,7 @@ import { ContentCard } from './ContentCard';
 import { useContentItems } from '../hooks/useContentItems';
 import { useHidden } from '../context/HiddenContext';
 import { useMessageGeneration } from '../hooks/useMessageGeneration';
-import { ContentItem, GeneratedPost } from '../types';
+import { ContentItem } from '../types';
 
 export function FeedViewer() {
   const items = useContentItems();
@@ -27,11 +27,18 @@ export function FeedViewer() {
   }, [generatedMessage]);
 
   // Filter out hidden items
-  const visibleItems = items.filter(item => !isHidden(item.id));
+  const visibleItems = React.useMemo(() => 
+    items.filter(item => !isHidden(item.id)),
+    [items, isHidden]
+  );
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="bg-gradient-to-br from-white via-white to-gray-50/30 
+                    dark:from-[#011427]/80 dark:via-[#011427]/70 dark:to-[#011427]/60 
+                    rounded-xl p-12 text-center backdrop-blur-sm
+                    border border-gray-100/50 dark:border-gray-700/50
+                    shadow-sm">
         <p className="text-gray-500 dark:text-gray-400">
           No content to display. Try enabling more sources or refreshing the content.
         </p>
@@ -41,16 +48,20 @@ export function FeedViewer() {
 
   if (visibleItems.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="bg-gradient-to-br from-white via-white to-gray-50/30 
+                    dark:from-[#011427]/80 dark:via-[#011427]/70 dark:to-[#011427]/60 
+                    rounded-xl p-12 text-center backdrop-blur-sm
+                    border border-gray-100/50 dark:border-gray-700/50
+                    shadow-sm">
         <p className="text-gray-500 dark:text-gray-400">
-          All posts are currently hidden. Use the "Show Hidden" button to restore them.
+          All posts are currently hidden. Use the "Show Hidden" button above to restore them.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 p-1">
       {visibleItems.map(item => (
         <ContentCard
           key={item.id}

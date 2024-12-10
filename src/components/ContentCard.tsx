@@ -41,7 +41,9 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
   const isForumContent = item.source === 'vanilla-forum';
 
   return (
-    <Card className="w-full bg-white dark:bg-[#011427] shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl border-0">
+    <Card className="group w-full bg-gradient-to-br from-white via-white to-gray-50/30 dark:from-[#011427]/80 dark:via-[#011427]/70 dark:to-[#011427]/60 
+                    shadow-lg hover:shadow-xl rounded-xl overflow-hidden transition-all duration-300 
+                    border border-gray-100/50 dark:border-gray-700/50">
       <CardHeader className="p-6 pb-4">
         <div className="flex items-start gap-4">
           {isYouTubeContent && item.image && (
@@ -82,9 +84,10 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
               <button
                 onClick={handleHide}
                 className="p-2 text-gray-400 hover:text-[#EC008C] dark:text-gray-500 dark:hover:text-[#EC008C] 
-                         rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200
-                         opacity-0 group-hover:opacity-100 focus:opacity-100 flex-shrink-0 mt-1"
+                         rounded-lg hover:bg-gray-100/50 dark:hover:bg-gray-700/30 transition-all duration-200
+                         opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none flex-shrink-0 mt-1"
                 title="Hide post"
+                aria-label="Hide post"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -100,10 +103,10 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
                      prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
                      prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed
                      prose-a:text-[#00AEEF] prose-a:no-underline hover:prose-a:text-[#EC008C] hover:prose-a:underline
-                     prose-code:text-sm prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                     prose-pre:bg-gray-100 dark:prose-pre:bg-gray-800 prose-pre:p-4 prose-pre:rounded-lg
+                     prose-code:text-sm prose-code:bg-gray-100/50 dark:prose-code:bg-gray-800/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+                     prose-pre:bg-gray-100/50 dark:prose-pre:bg-gray-800/50 prose-pre:p-4 prose-pre:rounded-lg
                      prose-img:rounded-lg prose-img:shadow-md hover:prose-img:shadow-lg prose-img:transition-shadow
-                     prose-blockquote:border-l-4 prose-blockquote:border-gray-200 dark:prose-blockquote:border-gray-700
+                     prose-blockquote:border-l-4 prose-blockquote:border-gray-200/50 dark:prose-blockquote:border-gray-700/50
                      prose-blockquote:pl-4 prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-400
                      prose-ul:list-disc prose-ul:pl-5 prose-ol:list-decimal prose-ol:pl-5
                      prose-li:text-gray-700 dark:prose-li:text-gray-300"
@@ -118,8 +121,8 @@ export function ContentCard({ item, onGenerate, generatedContent, isGenerating }
       
       {(generatedContent || isGenerating) && (
         <div className="mx-6 mb-6 mt-2">
-          <div className="p-4 bg-gradient-to-br from-gray-50 to-white dark:from-[#011427]/80 dark:to-[#011427]/50 
-                       rounded-xl border border-gray-100/50 dark:border-gray-700/50 backdrop-blur-sm
+          <div className="p-4 bg-gradient-to-br from-gray-50/30 via-white to-white dark:from-[#011427]/40 dark:via-[#011427]/30 dark:to-[#011427]/20 
+                       rounded-xl border border-gray-100/30 dark:border-gray-700/30 backdrop-blur-sm
                        shadow-sm hover:shadow-md transition-all duration-200">
             {isGenerating ? (
               <div className="flex flex-col items-center justify-center py-6 space-y-3">

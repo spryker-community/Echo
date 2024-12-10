@@ -22,7 +22,8 @@ export function SourceGrid({
   isRSSGrid = false,
 }: SourceGridProps) {
   return (
-    <div className={`grid grid-cols-4 gap-1.5 ${isRSSGrid ? 'pt-1' : ''}`}>
+    <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 
+                    ${isRSSGrid ? 'mt-3' : ''}`}>
       {sources.map((source) => (
         <SourceCard
           key={source.id}

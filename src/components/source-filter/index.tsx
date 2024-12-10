@@ -83,14 +83,17 @@ export function SourceFilter() {
   const rssFeeds: RSSSourceConfig[] = sources.filter((source): source is RSSSourceConfig => source.type === 'rss');
 
   return (
-    <div className="bg-white dark:bg-[#011427] rounded-xl p-4 shadow-sm">
+    <div className="bg-gradient-to-br from-white via-white to-gray-50/30 
+                    dark:from-[#011427]/80 dark:via-[#011427]/70 dark:to-[#011427]/60 
+                    rounded-xl p-4 shadow-sm
+                    border border-gray-100/50 dark:border-gray-700/50">
       <SourceFilterHeader
         hiddenCount={hiddenCount}
         onUnhideAll={handleUnhideAll}
         onRefresh={handleRefresh}
       />
 
-      <div className="space-y-2">
+      <div className="space-y-6">
         <SourceGrid
           sources={mainSources}
           getIcon={getSourceIcon}

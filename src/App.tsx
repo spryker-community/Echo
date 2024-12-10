@@ -117,7 +117,17 @@ function MainContent() {
         <header className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-2">
             <img src="/images/commercequest.png" alt="Logo" className="w-8 h-8" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Community Echo</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Community Echo</h1>
+              <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium tracking-wider
+                           bg-gradient-to-r from-[#00AEEF]/5 via-[#00AEEF]/8 to-[#00AEEF]/10 
+                           dark:from-[#00AEEF]/10 dark:via-[#00AEEF]/15 dark:to-[#00AEEF]/20 
+                           text-[#00AEEF]/80 dark:text-[#00AEEF]/80
+                           border border-[#00AEEF]/10 dark:border-[#00AEEF]/20
+                           rounded-md uppercase translate-y-[2px]">
+                Beta
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />

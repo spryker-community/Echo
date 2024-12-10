@@ -9,20 +9,23 @@ interface SourceFilterHeaderProps {
 
 export function SourceFilterHeader({ hiddenCount, onUnhideAll, onRefresh }: SourceFilterHeaderProps) {
   return (
-    <div className="flex justify-between items-center mb-3">
+    <div className="flex justify-between items-center mb-4">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-[#00AEEF]">
         Content Sources
       </h2>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {hiddenCount > 0 && (
           <button
             onClick={onUnhideAll}
-            className="flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-[#00AEEF] hover:text-[#EC008C] 
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium
+                     bg-gradient-to-br from-white via-white to-gray-50/30 
+                     dark:from-[#011427]/80 dark:via-[#011427]/70 dark:to-[#011427]/60
+                     text-[#00AEEF] hover:text-[#EC008C] 
                      dark:text-[#00AEEF] dark:hover:text-[#EC008C] 
                      border border-[#00AEEF] dark:border-[#00AEEF] rounded-lg 
                      hover:border-[#EC008C] dark:hover:border-[#EC008C]
-                     hover:bg-[#00AEEF]/5 dark:hover:bg-[#00AEEF]/10 
-                     transition-colors duration-200"
+                     shadow-sm hover:shadow-md
+                     transition-all duration-200"
             aria-label={`Show ${hiddenCount} hidden posts`}
           >
             <Eye className="w-4 h-4" />
@@ -31,12 +34,15 @@ export function SourceFilterHeader({ hiddenCount, onUnhideAll, onRefresh }: Sour
         )}
         <button
           onClick={onRefresh}
-          className="flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-[#00AEEF] hover:text-[#EC008C] 
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium
+                   bg-gradient-to-br from-white via-white to-gray-50/30 
+                   dark:from-[#011427]/80 dark:via-[#011427]/70 dark:to-[#011427]/60
+                   text-[#00AEEF] hover:text-[#EC008C] 
                    dark:text-[#00AEEF] dark:hover:text-[#EC008C] 
                    border border-[#00AEEF] dark:border-[#00AEEF] rounded-lg 
                    hover:border-[#EC008C] dark:hover:border-[#EC008C]
-                   hover:bg-[#00AEEF]/5 dark:hover:bg-[#00AEEF]/10 
-                   transition-colors duration-200"
+                   shadow-sm hover:shadow-md
+                   transition-all duration-200"
           aria-label="Refresh sources"
         >
           <RefreshCw className="w-4 h-4" />

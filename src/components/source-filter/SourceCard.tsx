@@ -21,18 +21,22 @@ export function SourceCard({
   return (
     <button
       onClick={() => onToggle(source.id)}
-      className={`h-20 flex flex-col items-center justify-center p-2 rounded-lg border-2 transition-all
-                 hover:scale-[1.02] hover:shadow-md
+      className={`h-20 flex flex-col items-center justify-center p-2 rounded-lg 
+                 shadow-sm hover:shadow-md transition-all duration-300
                  ${source.enabled 
-                   ? 'border-[#00AEEF] bg-[#00AEEF]/5 dark:bg-[#00AEEF]/10' 
-                   : 'border-gray-200 dark:border-gray-700 hover:border-[#EC008C] dark:hover:border-[#EC008C] bg-gray-50/50 dark:bg-[#011427]/50'}`}
+                   ? 'bg-gradient-to-br from-[#00AEEF]/5 via-[#00AEEF]/3 to-transparent dark:from-[#00AEEF]/15 dark:via-[#00AEEF]/10 dark:to-[#00AEEF]/5 border-[#00AEEF]' 
+                   : 'bg-gradient-to-br from-white via-white to-gray-50/30 dark:from-[#011427]/80 dark:via-[#011427]/70 dark:to-[#011427]/60 hover:border-[#EC008C] dark:hover:border-[#EC008C] border-gray-200 dark:border-gray-700'} 
+                 border-2 hover:scale-[1.02]`}
     >
       <img 
         src={icon} 
         alt={label}
         className="w-6 h-6 object-contain mb-1"
       />
-      <span className={`text-xs font-medium leading-none text-center mb-1 ${source.enabled ? 'text-[#00AEEF] dark:text-[#00AEEF]' : 'text-gray-700 dark:text-gray-300'}`}>
+      <span className={`text-xs font-medium leading-none text-center mb-1 
+                     ${source.enabled 
+                       ? 'text-[#00AEEF] dark:text-[#00AEEF]' 
+                       : 'text-gray-700 dark:text-gray-300'}`}>
         {label}
       </span>
       <span className={`text-[10px] leading-none ${statusColor}`}>

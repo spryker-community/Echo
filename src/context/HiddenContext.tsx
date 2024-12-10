@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface HiddenContextType {
   hiddenPosts: Set<string>;
@@ -9,10 +9,21 @@ interface HiddenContextType {
   hiddenCount: number;
 }
 
+const STORAGE_KEY = 'echo-hidden-posts';
+
 const HiddenContext = createContext<HiddenContextType | undefined>(undefined);
 
 export function HiddenProvider({ children }: { children: React.ReactNode }) {
-  const [hiddenPosts, setHiddenPosts] = useState<Set<string>>(new Set());
+  // Initialize state from localStorage if available
+  const [hiddenPosts, setHiddenPosts] = useState<Set<string>>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  });
+
+  // Save to localStorage whenever hiddenPosts changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(hiddenPosts)));
+  }, [hiddenPosts]);
 
   const hidePost = (id: string) => {
     setHiddenPosts(prev => {
