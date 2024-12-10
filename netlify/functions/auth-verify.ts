@@ -28,22 +28,21 @@ const createErrorResponse = (origin: string, message: string, details?: string) 
 export const handler: Handler = async (event) => {
   console.log('Auth verification handler invoked');
   
-  // Determine the correct origin
-  let origin = SITE_URL; // Default to SITE_URL
+  // Determine the correct origin and domain
+  let origin = SITE_URL;
+  let domain = new URL(SITE_URL).hostname;
+
   if (event.headers.origin) {
     try {
       const originUrl = new URL(event.headers.origin);
-      // Only accept origins that match our site URL or localhost
       if (originUrl.hostname === new URL(SITE_URL).hostname || originUrl.hostname === 'localhost') {
         origin = event.headers.origin;
+        domain = originUrl.hostname;
       }
     } catch (error) {
       console.warn('Invalid origin header:', event.headers.origin);
     }
   }
-
-  const url = new URL(origin);
-  const domain = url.hostname;
 
   console.log('Request details:', {
     origin,
@@ -127,25 +126,30 @@ export const handler: Handler = async (event) => {
       { algorithm: 'HS256' }
     );
 
-    // Set cookie with appropriate domain
-    const cookieHeader = `auth=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; ${IS_PROD ? 'Secure; ' : ''}Domain=${domain}; Max-Age=${7 * 24 * 60 * 60}`;
+    // Set multiple cookie headers to handle different domain scenarios
+    const cookieHeaders = [
+      // Cookie for the exact domain
+      `auth=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; ${IS_PROD ? 'Secure; ' : ''}Domain=${domain}; Max-Age=${7 * 24 * 60 * 60}`,
+      // Cookie without domain specification
+      `auth=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; ${IS_PROD ? 'Secure; ' : ''}Max-Age=${7 * 24 * 60 * 60}`
+    ];
+
     console.log('Cookie configuration:', {
       isProd: IS_PROD,
       domain,
       sameSite: 'Lax',
       maxAge: 7 * 24 * 60 * 60,
-      cookieLength: cookieHeader.length,
+      cookieCount: cookieHeaders.length,
     });
 
-    // Small delay to ensure cookie is set
+    // Small delay to ensure cookies are set
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Use the full origin URL for the redirect
     const response = {
       statusCode: 302,
       headers: {
-        'Location': `${origin}/dashboard`,  // Redirect to /dashboard instead of /
-        'Set-Cookie': cookieHeader,
+        'Location': `${origin}/dashboard`,
+        'Set-Cookie': cookieHeaders,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0',
@@ -156,6 +160,7 @@ export const handler: Handler = async (event) => {
     console.log('Successful authentication response prepared:', {
       redirectTo: `${origin}/dashboard`,
       cookieSet: true,
+      cookieCount: cookieHeaders.length,
     });
     return response;
 
