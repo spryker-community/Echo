@@ -76,9 +76,9 @@ export const handler: Handler = async (event) => {
 
     let decoded;
     try {
+      // Removed maxAge option since we're using explicit exp claim
       decoded = jwt.verify(token, JWT_SECRET, {
         algorithms: ['HS256'],
-        maxAge: '15m',
       }) as JWTPayload;
 
       console.log('Token decoded successfully:', {
