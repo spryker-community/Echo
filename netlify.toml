@@ -30,37 +30,12 @@
     Access-Control-Max-Age = "86400"
 
 [[redirects]]
-  from = "/.netlify/functions/auth-verify"
-  to = "/.netlify/functions/auth-verify"
-  status = 200
-  force = true
-  [redirects.headers]
-    Access-Control-Allow-Origin = "https://echo.commercequest.space"
-    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
-    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-    Access-Control-Allow-Credentials = "true"
-    Access-Control-Max-Age = "86400"
-
-[[redirects]]
-  from = "/auth/verify"
-  to = "/index.html"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/auth/*"
-  to = "/index.html"
-  status = 200
-  force = true
-
-[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["jsonwebtoken"]
 
 [build.environment]
   NODE_VERSION = "18"
@@ -83,12 +58,6 @@
   compress = true
 
 [template.environment]
-  ALLOWED_DOMAINS = "Set the allowed email domains (comma-separated)"
-  JWT_SECRET = "Set a secure secret for JWT tokens"
-  SMTP_HOST = "SMTP server host"
-  SMTP_PORT = "SMTP server port"
-  SMTP_USER = "SMTP username/email"
-  SMTP_PASS = "SMTP password"
   VITE_AI_MODEL = "Set the AI model"
   VITE_OPENROUTER_API_KEY = "Set the OpenRouter API key"
   VITE_RSS_FEED_1_NAME = "Set RSS feed 1 name"
