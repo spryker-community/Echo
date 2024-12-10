@@ -15,27 +15,39 @@ const queryClient = new QueryClient();
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = React.useState<boolean | null>(null);
+  const [checkCount, setCheckCount] = React.useState(0);
 
   React.useEffect(() => {
     // Check for auth cookie
     const checkAuth = () => {
-      const cookies = document.cookie.split(';');
-      const authCookie = cookies.find(cookie => cookie.trim().startsWith('auth='));
-      console.log('Current cookies:', document.cookie);
+      const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+      console.log('Checking auth, all cookies:', cookies);
+      
+      const authCookie = cookies.find(cookie => cookie.startsWith('auth='));
       console.log('Found auth cookie:', authCookie);
       
       if (!authCookie) {
-        setIsAuthenticated(false);
+        console.log('No auth cookie found, check count:', checkCount);
+        if (checkCount < 3) {
+          // If we haven't checked many times yet, keep checking
+          setCheckCount(prev => prev + 1);
+          setIsAuthenticated(null);
+        } else {
+          // After several checks, if still no cookie, consider not authenticated
+          setIsAuthenticated(false);
+        }
         return;
       }
 
       // Verify the cookie is valid
       try {
-        const token = authCookie.split('=')[1].trim();
+        const token = authCookie.split('=')[1];
         if (!token) {
+          console.log('Auth cookie found but empty');
           setIsAuthenticated(false);
           return;
         }
+        console.log('Valid auth cookie found');
         setIsAuthenticated(true);
       } catch (error) {
         console.error('Error checking auth cookie:', error);
@@ -43,12 +55,22 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
       }
     };
 
+    // Initial check
     checkAuth();
-    // Set up an interval to check periodically
-    const interval = setInterval(checkAuth, 60000); // Check every minute
 
-    return () => clearInterval(interval);
-  }, []);
+    // If not authenticated and haven't checked many times, check again after a short delay
+    const timer = !isAuthenticated && checkCount < 3 ? 
+      setTimeout(checkAuth, 1000) : // Check again after 1 second
+      setInterval(checkAuth, 60000); // Regular interval check
+
+    return () => {
+      if (!isAuthenticated && checkCount < 3) {
+        clearTimeout(timer);
+      } else {
+        clearInterval(timer);
+      }
+    };
+  }, [checkCount, isAuthenticated]);
 
   // Show loading state while checking authentication
   if (isAuthenticated === null) {
@@ -94,7 +116,7 @@ function VerifyAuth() {
         console.log('Starting token verification');
         setVerificationStatus('Verifying token...');
 
-        // Allow redirects and include credentials
+        // Pass token as query parameter and allow redirects
         const response = await fetch(`/.netlify/functions/auth-verify?token=${encodeURIComponent(token)}`, {
           method: 'GET',
           credentials: 'include',
@@ -108,15 +130,14 @@ function VerifyAuth() {
           url: response.url,
         });
 
-        if (response.ok) {
+        if (response.ok || response.status === 302) {
           setVerificationStatus('Verification successful, redirecting...');
           // Add a small delay to ensure cookie is set
           await new Promise(resolve => setTimeout(resolve, 1000));
-          // Use navigate instead of window.location for a smoother experience
-          navigate('/', { replace: true });
+          // Use navigate to go to the dashboard
+          navigate('/dashboard', { replace: true });
         } else {
-          const errorData = await response.text();
-          console.error('Verification failed:', errorData);
+          console.error('Verification failed:', response.status);
           setVerificationStatus('Failed to verify authentication token');
           navigate('/auth/error', { 
             replace: true,
@@ -202,18 +223,28 @@ export default function App() {
           <Route path="/auth/error" element={<ErrorPage />} />
           <Route path="/auth/verify" element={<VerifyAuth />} />
           
-          {/* Protected main route */}
+          {/* Protected dashboard route */}
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <RequireAuth>
                 <MainContent />
               </RequireAuth>
             }
           />
+          
+          {/* Redirect root to dashboard if authenticated, otherwise to login */}
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <Navigate to="/dashboard" replace />
+              </RequireAuth>
+            }
+          />
 
           {/* Catch all redirect */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
         <Toaster />
       </Router>

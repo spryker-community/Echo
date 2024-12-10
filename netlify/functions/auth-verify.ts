@@ -76,7 +76,6 @@ export const handler: Handler = async (event) => {
 
     let decoded;
     try {
-      // Removed maxAge option since we're using explicit exp claim
       decoded = jwt.verify(token, JWT_SECRET, {
         algorithms: ['HS256'],
       }) as JWTPayload;
@@ -141,10 +140,11 @@ export const handler: Handler = async (event) => {
     // Small delay to ensure cookie is set
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    // Use the full origin URL for the redirect
     const response = {
       statusCode: 302,
       headers: {
-        'Location': '/',
+        'Location': `${origin}/dashboard`,  // Redirect to /dashboard instead of /
         'Set-Cookie': cookieHeader,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
@@ -153,7 +153,10 @@ export const handler: Handler = async (event) => {
       body: '',
     };
 
-    console.log('Successful authentication response prepared');
+    console.log('Successful authentication response prepared:', {
+      redirectTo: `${origin}/dashboard`,
+      cookieSet: true,
+    });
     return response;
 
   } catch (error: any) {
