@@ -80,6 +80,25 @@ Project plan: see /project_briefing.md
 - [ ] use the RSS feeds from the .env file
 - [ ] add RSS switches/toggles to the existing frontend Content Sources block
 
+### 5. Authentication Implementation 🚧
+- [x] Implement magic link authentication flow
+- [x] Create auth-request endpoint for initiating authentication
+- [x] Create auth-magic-link endpoint for sending emails
+- [x] Create auth-verify endpoint for token verification
+- [x] Add client-side authentication handling
+- [x] Implement protected routes
+- [x] Add login page and error page
+- [ ] Debug and fix token verification issues
+  - [ ] Validate JWT_SECRET configuration
+  - [ ] Verify ALLOWED_DOMAINS setting
+  - [ ] Fix cookie domain issues
+  - [ ] Test complete authentication flow
+- [ ] Add session management
+  - [ ] Implement proper cookie handling
+  - [ ] Add session refresh mechanism
+  - [ ] Add logout functionality
+- [ ] Add authentication documentation
+
 ## Phase 4 - Polish & Testing (Week 7-8)
 
 ### 1. Testing Implementation ⏳
@@ -133,10 +152,11 @@ Content Sources → Integration Layer → Content Processing → UI Display → 
 - [x] Improved error handling and retry mechanism
 
 ## Next Immediate Steps
-1. Complete video preview capabilities
-2. Begin RSS feed implementation
-3. Start comprehensive testing phase
-4. Prepare documentation
+1. Fix authentication token verification issues
+2. Complete video preview capabilities
+3. Begin RSS feed implementation
+4. Start comprehensive testing phase
+5. Prepare documentation
 
 Legend:
 ✅ = Completed

@@ -114,13 +114,16 @@ function VerifyAuth() {
           // Get the redirect location
           const location = response.headers.get('Location');
           if (location) {
+            console.log('Redirecting to:', location);
             // Use window.location.replace for a full page reload
             window.location.replace(location);
           } else {
+            console.log('Redirecting to root');
             window.location.replace('/');
           }
         } else {
           console.error('Unexpected response:', response.status);
+          setVerificationStatus('Failed to verify authentication token');
           navigate('/auth/error', { 
             replace: true,
             state: { message: 'Failed to verify authentication token' }
