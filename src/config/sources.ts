@@ -72,7 +72,7 @@ const sources: SourceConfig[] = [
     id: 'gartner',
     type: 'review',
     url: '/data/gartner-reviews.json',
-    enabled: true,
+    enabled: true
   }
 ];
 
