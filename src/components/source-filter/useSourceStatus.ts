@@ -8,12 +8,14 @@ interface UseSourceStatusProps {
   forumPosts?: any[];
   blueSkyPosts?: any[];
   rssItems?: any[];
+  gartnerReviews?: any[];
   errors: {
     youtubeError?: Error | null;
     youtubeSearchError?: Error | null;
     forumError?: Error | null;
     blueSkyError?: Error | null;
     rssError?: Error | null;
+    gartnerError?: Error | null;
   };
 }
 
@@ -25,9 +27,10 @@ export function useSourceStatus({
   forumPosts,
   blueSkyPosts,
   rssItems,
+  gartnerReviews,
   errors
 }: UseSourceStatusProps): string {
-  const { youtubeError, youtubeSearchError, forumError, blueSkyError, rssError } = errors;
+  const { youtubeError, youtubeSearchError, forumError, blueSkyError, rssError, gartnerError } = errors;
 
   if (sourceId === 'youtube') {
     if (youtubeError) {
@@ -69,6 +72,12 @@ export function useSourceStatus({
     }
     if (!blueSkyPosts?.length) return '0 posts';
     return `${blueSkyPosts.length} posts`;
+  }
+
+  if (sourceId === 'gartner') {
+    if (gartnerError) return '(Error)';
+    if (!gartnerReviews?.length) return '0 reviews';
+    return `${gartnerReviews.length} reviews`;
   }
 
   if (sourceId.startsWith('rss-feed-')) {

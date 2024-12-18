@@ -9,6 +9,8 @@ export function getSourceIcon(sourceId: string): string {
       return '/images/commercequest.png';
     case 'bluesky':
       return '/images/bluesky.svg';
+    case 'gartner':
+      return '/images/gartner.png';
     default:
       if (sourceId.startsWith('rss-feed-')) {
         return '/images/rss.svg';
@@ -31,6 +33,8 @@ export function getSourceLabel(source: SourceConfig): string {
       return 'Community Forum';
     case 'bluesky':
       return 'BlueSky Posts';
+    case 'gartner':
+      return 'Gartner Reviews';
     default:
       return source.id;
   }
@@ -44,9 +48,10 @@ export function getStatusColor(
     forumError?: Error | null;
     blueSkyError?: Error | null;
     rssError?: Error | null;
+    gartnerError?: Error | null;
   }
 ): string {
-  const { youtubeError, youtubeSearchError, forumError, blueSkyError, rssError } = errors;
+  const { youtubeError, youtubeSearchError, forumError, blueSkyError, rssError, gartnerError } = errors;
 
   if ((sourceId === 'youtube' && youtubeError) || (sourceId === 'youtube-search' && youtubeSearchError)) {
     const errorMessage = sourceId === 'youtube' 
@@ -62,6 +67,9 @@ export function getStatusColor(
     return 'text-red-500 dark:text-red-500';
   }
   if (sourceId === 'bluesky' && blueSkyError) {
+    return 'text-red-500 dark:text-red-500';
+  }
+  if (sourceId === 'gartner' && gartnerError) {
     return 'text-red-500 dark:text-red-500';
   }
   if (sourceId.startsWith('rss-feed-') && rssError) {

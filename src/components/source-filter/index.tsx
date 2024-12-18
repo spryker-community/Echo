@@ -4,6 +4,7 @@ import { useYouTubeVideos } from '../../hooks/useYouTubeVideos';
 import { useForumPosts } from '../../hooks/useForumPosts';
 import { useBlueSkyPosts } from '../../hooks/useBlueSkyPosts';
 import { useRSSFeeds } from '../../hooks/useRSSFeeds';
+import { useGartnerReviews } from '../../hooks/useGartnerReviews';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../../hooks/useToast';
 import { useHidden } from '../../context/HiddenContext';
@@ -26,13 +27,15 @@ export function SourceFilter() {
   const { data: forumPosts, error: forumError } = useForumPosts(false);
   const { data: blueSkyPosts, error: blueSkyError } = useBlueSkyPosts(false);
   const { items: rssItems, error: rssError } = useRSSFeeds(false);
+  const { items: gartnerReviews, error: gartnerError } = useGartnerReviews();
 
   const errors = {
     youtubeError,
     youtubeSearchError,
     forumError,
     blueSkyError,
-    rssError
+    rssError,
+    gartnerError
   };
 
   const handleRefresh = async () => {
@@ -42,7 +45,8 @@ export function SourceFilter() {
         queryClient.refetchQueries({ queryKey: ['youtubeVideos'] }),
         queryClient.refetchQueries({ queryKey: ['forumPosts'] }),
         queryClient.refetchQueries({ queryKey: ['blueSkyPosts'] }),
-        queryClient.refetchQueries({ queryKey: ['rss-feeds'] })
+        queryClient.refetchQueries({ queryKey: ['rss-feeds'] }),
+        queryClient.refetchQueries({ queryKey: ['gartner-reviews'] })
       ]);
 
       showToast({
@@ -75,12 +79,20 @@ export function SourceFilter() {
     forumPosts,
     blueSkyPosts,
     rssItems,
+    gartnerReviews,
     errors
   });
 
   // Separate sources into main and RSS feeds
-  const mainSources: SourceConfig[] = sources.filter(source => source.type !== 'rss');
+  let mainSources: SourceConfig[] = sources.filter(source => source.type !== 'rss');
   const rssFeeds: RSSSourceConfig[] = sources.filter((source): source is RSSSourceConfig => source.type === 'rss');
+
+  // Move Gartner reviews to the end of the mainSources array
+  mainSources = mainSources.sort((a, b) => {
+    if (a.id === 'gartner') return 1;
+    if (b.id === 'gartner') return -1;
+    return 0;
+  });
 
   return (
     <div className="bg-gradient-to-br from-white via-white to-gray-50/30 

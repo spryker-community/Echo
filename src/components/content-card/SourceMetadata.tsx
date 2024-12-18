@@ -30,6 +30,32 @@ function getStatusLabel(status: string | undefined) {
 
 export function SourceMetadata({ source, metadata }: SourceMetadataProps) {
   switch (source) {
+    case 'gartner': {
+      const { rating, reviewer } = metadata;
+      const details = [
+        reviewer.role,
+        reviewer.industry,
+        reviewer.company,
+        reviewer.size
+      ].filter(Boolean);
+
+      return (
+        <div className="flex flex-col space-y-2 font-manrope">
+          <div className="flex items-center flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Rating: {rating}</span>
+              {details.length > 0 && (
+                <>
+                  <span className="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></span>
+                  <span>{details.join(' • ')}</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     case 'vanilla-forum': {
       const { insertUser, categoryName, countComments, dateLastComment, status, type } = metadata;
       const hasNewActivity = dateLastComment && new Date(dateLastComment) > new Date(metadata.date);

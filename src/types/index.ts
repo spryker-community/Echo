@@ -66,6 +66,16 @@ export interface RSSMetadata {
   categories?: string[];
 }
 
+export interface GartnerMetadata {
+  rating: string;
+  reviewer: {
+    role?: string;
+    industry?: string;
+    company?: string;
+    size?: string;
+  };
+}
+
 interface ForumContentItem extends BaseContentItem {
   source: 'vanilla-forum';
   type: 'forum';
@@ -96,7 +106,13 @@ interface RSSContentItem extends BaseContentItem {
   metadata: RSSMetadata;
 }
 
-export type ContentItem = ForumContentItem | YouTubeContentItem | GitHubContentItem | RSSContentItem | BlueSkyContentItem;
+interface GartnerContentItem extends BaseContentItem {
+  source: 'gartner';
+  type: 'review';
+  metadata: GartnerMetadata;
+}
+
+export type ContentItem = ForumContentItem | YouTubeContentItem | GitHubContentItem | RSSContentItem | BlueSkyContentItem | GartnerContentItem;
 
 export interface GeneratedPost {
   content: string;
@@ -105,9 +121,11 @@ export interface GeneratedPost {
   generatedAt: string;
 }
 
+export type SourceType = 'forum' | 'youtube' | 'youtube-search' | 'social' | 'github' | 'rss' | 'review';
+
 export interface BaseSourceConfig {
   id: string;
-  type: string;
+  type: SourceType;
   url: string;
   apiKey?: string;
   enabled: boolean;
