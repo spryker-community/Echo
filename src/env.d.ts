@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_OPENROUTER_API_KEY: string;
+  readonly VITE_OPENAI_API_KEY: string;
   readonly VITE_AI_MODEL: string;
   readonly VITE_YOUTUBE_API_TOKEN: string;
   readonly VITE_YOUTUBE_CHANNEL_ID: string;

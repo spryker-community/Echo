@@ -1,11 +1,11 @@
 import { ContentItem, Team } from '../../types';
 import { teams } from '../../config/teams';
 
-const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
+const OPENAI_BASE_URL = 'https://api.openai.com/v1';
 
-async function makeOpenRouterRequest(messages: Array<{ role: string; content: string }>) {
+async function makeOpenAIRequest(messages: Array<{ role: string; content: string }>) {
   try {
-    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     if (!apiKey) {
       console.error('API Key missing:', { 
         hasKey: !!apiKey,
@@ -13,45 +13,43 @@ async function makeOpenRouterRequest(messages: Array<{ role: string; content: st
         isDev: import.meta.env.DEV,
         isProd: import.meta.env.PROD
       });
-      throw new Error('OpenRouter API key is missing. Please check your environment variables.');
+      throw new Error('OpenAI API key is missing. Please check your environment variables.');
     }
 
     const requestBody = {
-      model: import.meta.env.VITE_AI_MODEL || 'anthropic/claude-3-haiku',
+      model: import.meta.env.VITE_AI_MODEL || 'gpt-4-0125-preview',
       messages,
       max_tokens: 1000,
       temperature: 0.7,
       stream: false
     };
 
-    console.log('Making OpenRouter request:', {
-      url: `${OPENROUTER_BASE_URL}/chat/completions`,
+    console.log('Making OpenAI request:', {
+      url: `${OPENAI_BASE_URL}/chat/completions`,
       model: requestBody.model,
       messageCount: messages.length
     });
 
-    const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'Community Echo'
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenRouter API Error Response:', errorText);
-      throw new Error(`OpenRouter API request failed: ${response.status} ${response.statusText}`);
+      console.error('OpenAI API Error Response:', errorText);
+      throw new Error(`OpenAI API request failed: ${response.status} ${response.statusText}`);
     }
 
     const responseData = await response.json();
-    console.log('OpenRouter API Response:', responseData);
+    console.log('OpenAI API Response:', responseData);
     return responseData;
   } catch (error) {
-    console.error('OpenRouter API Error:', error);
+    console.error('OpenAI API Error:', error);
     throw new Error('Failed to generate message. Please try again.');
   }
 }
@@ -65,7 +63,7 @@ Return only the team names as a comma-separated list, nothing else.`;
 
   try {
     console.log('Starting audience analysis for:', item.title);
-    const response = await makeOpenRouterRequest([
+    const response = await makeOpenAIRequest([
       { role: 'system', content: 'You are a helpful assistant that analyzes content and identifies relevant teams. Always respond with just the team names as a comma-separated list.' },
       { role: 'user', content: testPrompt }
     ]);
@@ -115,7 +113,7 @@ Example formats:
 
   try {
     console.log('Starting post generation for:', item.title);
-    const response = await makeOpenRouterRequest([
+    const response = await makeOpenAIRequest([
       { 
         role: 'system', 
         content: 'You are a helpful assistant that creates short, team-specific Slack messages. Keep responses extremely concise and relevant to the target teams.'
