@@ -1,0 +1,33 @@
+{
+  "lastUpdated": "2024-02-14T00:00:00.000Z",
+  "reviews": [
+    {
+      "id": "test-review-1",
+      "title": "Great B2B Commerce Platform",
+      "content": "Spryker has proven to be a robust and flexible solution for our B2B commerce needs. The modular architecture allows for easy customization and scalability.",
+      "rating": "4.5/5",
+      "date": "2024-02-14T10:00:00.000Z",
+      "reviewer": {
+        "role": "Technical Architect",
+        "industry": "Retail",
+        "company": "Large Enterprise",
+        "size": "1000+ employees"
+      },
+      "url": "https://www.gartner.com/reviews/market/digital-commerce/vendor/spryker/product/spryker-cloud-commerce-os/reviews"
+    },
+    {
+      "id": "test-review-2",
+      "title": "Excellent Composable Commerce Platform",
+      "content": "The platform's composable architecture and marketplace capabilities have helped us modernize our digital commerce infrastructure significantly.",
+      "rating": "5/5",
+      "date": "2024-02-13T15:30:00.000Z",
+      "reviewer": {
+        "role": "CTO",
+        "industry": "Manufacturing",
+        "company": "Mid-size Enterprise",
+        "size": "500-999 employees"
+      },
+      "url": "https://www.gartner.com/reviews/market/digital-commerce/vendor/spryker/product/spryker-cloud-commerce-os/reviews"
+    }
+  ]
+}

@@ -66,7 +66,15 @@ function getRSSFeeds() {
 }
 
 // Create sources array with required environment variables
-const sources: SourceConfig[] = [];
+const sources: SourceConfig[] = [
+  // Add Gartner Reviews source (always available since it's static)
+  {
+    id: 'gartner',
+    type: 'review',
+    url: '/data/gartner-reviews.json',
+    enabled: true,
+  }
+];
 
 // Add Forum source if configured
 const forumUrl = getForumUrl();

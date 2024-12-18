@@ -1,0 +1,37 @@
+name: Fetch Gartner Reviews
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Run every 6 hours
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  fetch-reviews:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: npm install puppeteer
+          
+      - name: Fetch reviews
+        run: node scripts/fetch-gartner-reviews.js
+        
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --quiet public/data/gartner-reviews.json || echo "changes=true" >> $GITHUB_OUTPUT
+          
+      - name: Commit and push if changed
+        if: steps.git-check.outputs.changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add public/data/gartner-reviews.json
+          git commit -m "Update Gartner reviews"
+          git push

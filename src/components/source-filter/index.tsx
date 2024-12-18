@@ -4,6 +4,7 @@ import { useYouTubeVideos } from '../../hooks/useYouTubeVideos';
 import { useForumPosts } from '../../hooks/useForumPosts';
 import { useBlueSkyPosts } from '../../hooks/useBlueSkyPosts';
 import { useRSSFeeds } from '../../hooks/useRSSFeeds';
+import { useGartnerReviews } from '../../hooks/useGartnerReviews';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../../hooks/useToast';
 import { useHidden } from '../../context/HiddenContext';
@@ -26,13 +27,15 @@ export function SourceFilter() {
   const { data: forumPosts, error: forumError } = useForumPosts(false);
   const { data: blueSkyPosts, error: blueSkyError } = useBlueSkyPosts(false);
   const { items: rssItems, error: rssError } = useRSSFeeds(false);
+  const { items: gartnerItems, error: gartnerError } = useGartnerReviews();
 
   const errors = {
     youtubeError,
     youtubeSearchError,
     forumError,
     blueSkyError,
-    rssError
+    rssError,
+    gartnerError
   };
 
   const handleRefresh = async () => {
@@ -42,7 +45,8 @@ export function SourceFilter() {
         queryClient.refetchQueries({ queryKey: ['youtubeVideos'] }),
         queryClient.refetchQueries({ queryKey: ['forumPosts'] }),
         queryClient.refetchQueries({ queryKey: ['blueSkyPosts'] }),
-        queryClient.refetchQueries({ queryKey: ['rss-feeds'] })
+        queryClient.refetchQueries({ queryKey: ['rss-feeds'] }),
+        queryClient.refetchQueries({ queryKey: ['gartner-reviews'] })
       ]);
 
       showToast({
@@ -75,12 +79,18 @@ export function SourceFilter() {
     forumPosts,
     blueSkyPosts,
     rssItems,
+    gartnerReviews: gartnerItems, // Pass gartnerItems as gartnerReviews
     errors
   });
 
-  // Separate sources into main and RSS feeds
-  const mainSources: SourceConfig[] = sources.filter(source => source.type !== 'rss');
-  const rssFeeds: RSSSourceConfig[] = sources.filter((source): source is RSSSourceConfig => source.type === 'rss');
+  // Split sources into first row and second row
+  const firstRowSources = sources.filter(source => source.type !== 'rss' && source.id !== 'gartner');
+  const secondRowSources = [
+    // Start with Gartner
+    ...sources.filter(source => source.id === 'gartner'),
+    // Then add RSS feeds
+    ...sources.filter(source => source.type === 'rss')
+  ];
 
   return (
     <div className="bg-gradient-to-br from-white via-white to-gray-50/30 
@@ -93,9 +103,10 @@ export function SourceFilter() {
         onRefresh={handleRefresh}
       />
 
-      <div className="space-y-6">
+      <div className="space-y-3">
+        {/* First row */}
         <SourceGrid
-          sources={mainSources}
+          sources={firstRowSources}
           getIcon={getSourceIcon}
           getLabel={getSourceLabel}
           getStatus={getStatus}
@@ -103,17 +114,15 @@ export function SourceFilter() {
           onToggle={toggleSource}
         />
 
-        {rssFeeds.length > 0 && (
-          <SourceGrid
-            sources={rssFeeds}
-            getIcon={getSourceIcon}
-            getLabel={getSourceLabel}
-            getStatus={getStatus}
-            getStatusColor={(id) => getStatusColor(id, errors)}
-            onToggle={toggleSource}
-            isRSSGrid
-          />
-        )}
+        {/* Second row (Gartner + RSS) */}
+        <SourceGrid
+          sources={secondRowSources}
+          getIcon={getSourceIcon}
+          getLabel={getSourceLabel}
+          getStatus={getStatus}
+          getStatusColor={(id) => getStatusColor(id, errors)}
+          onToggle={toggleSource}
+        />
       </div>
     </div>
   );
