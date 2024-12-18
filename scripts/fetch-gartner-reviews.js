@@ -8,6 +8,18 @@ const __dirname = path.dirname(__filename);
 
 const REVIEWS_URL = 'https://www.gartner.com/reviews/market/digital-commerce/vendor/spryker/product/spryker-cloud-commerce-os/reviews?marketSeoName=digital-commerce&vendorSeoName=spryker&productSeoName=spryker-cloud-commerce-os';
 
+// Function to convert date string to ISO format
+function parseReviewDate(dateStr) {
+  // Extract date from "Reviewed on Sep 26, 2024"
+  const match = dateStr.match(/Reviewed on (.+)/);
+  if (!match) return null;
+  
+  const date = new Date(match[1]);
+  if (isNaN(date.getTime())) return null;
+  
+  return date.toISOString();
+}
+
 async function fetchReviews() {
   const browser = await puppeteer.launch({
     headless: 'new',
@@ -74,21 +86,24 @@ async function fetchReviews() {
     console.log('Extracting reviews...');
     const reviews = await page.evaluate(() => {
       return Array.from(document.querySelectorAll('.review')).map(review => {
-        // Extract the date and convert it to ISO format
-        const dateText = review.querySelector('.review-headline-container')?.textContent?.trim();
-        const dateMatch = dateText?.match(/Reviewed on (.+)/);
-        const dateStr = dateMatch ? dateMatch[1] : '';
-        const date = new Date(dateStr);
+        const dateText = review.querySelector('.review-headline-container')?.textContent?.trim() || '';
         
         return {
           totalScore: review.querySelector('.avgStarIcon .ratingNumber')?.textContent?.trim(),
           title: review.querySelector('.review-headline')?.textContent?.trim(),
           shortDescription: review.querySelector('.uxd-truncate-text')?.textContent?.trim(),
           fullReviewLink: null,
-          date: date.toISOString() // Store date in ISO format
+          reviewDate: dateText // Store the raw date text
         };
       });
     });
+    
+    // Process dates outside of page.evaluate
+    const processedReviews = reviews.map(review => ({
+      ...review,
+      date: parseReviewDate(review.reviewDate) || new Date().toISOString(), // Fallback to current date if parsing fails
+      reviewDate: undefined // Remove the raw date text
+    }));
     
     // Create data directory if it doesn't exist
     const dataDir = path.join(__dirname, '..', 'public', 'data');
@@ -96,13 +111,13 @@ async function fetchReviews() {
     
     // Save to JSON file
     const filePath = path.join(dataDir, 'gartner-reviews.json');
-    console.log(`Saving ${reviews.length} reviews to ${filePath}`);
+    console.log(`Saving ${processedReviews.length} reviews to ${filePath}`);
     
     await fs.writeFile(
       filePath,
       JSON.stringify({
         lastUpdated: new Date().toISOString(),
-        reviews
+        reviews: processedReviews
       }, null, 2)
     );
     
