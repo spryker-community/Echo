@@ -6,6 +6,7 @@ interface GartnerReview {
   title: string;
   shortDescription: string;
   fullReviewLink: string | null;
+  date: string;
 }
 
 interface GartnerReviewsData {
@@ -33,7 +34,7 @@ export function useGartnerReviews() {
           title: review.title,
           description: review.shortDescription,
           url: review.fullReviewLink || '',
-          date: data.lastUpdated, // Using lastUpdated as the date since we don't have individual dates
+          date: review.date, // Using the review's date instead of lastUpdated
           source: 'gartner',
           type: 'review',
           metadata: {

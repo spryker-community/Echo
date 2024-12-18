@@ -73,12 +73,21 @@ async function fetchReviews() {
     // Extract reviews
     console.log('Extracting reviews...');
     const reviews = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('.review')).map(review => ({
-        totalScore: review.querySelector('.avgStarIcon')?.textContent?.trim(),
-        title: review.querySelector('.review-headline')?.textContent?.trim(),
-        shortDescription: review.querySelector('.uxd-truncate-text')?.textContent?.trim(),
-        fullReviewLink: review.querySelector('.uxd-btn.uxd-btn-primary')?.getAttribute('href')
-      }));
+      return Array.from(document.querySelectorAll('.review')).map(review => {
+        // Extract the date and convert it to ISO format
+        const dateText = review.querySelector('.review-headline-container')?.textContent?.trim();
+        const dateMatch = dateText?.match(/Reviewed on (.+)/);
+        const dateStr = dateMatch ? dateMatch[1] : '';
+        const date = new Date(dateStr);
+        
+        return {
+          totalScore: review.querySelector('.avgStarIcon .ratingNumber')?.textContent?.trim(),
+          title: review.querySelector('.review-headline')?.textContent?.trim(),
+          shortDescription: review.querySelector('.uxd-truncate-text')?.textContent?.trim(),
+          fullReviewLink: null,
+          date: date.toISOString() // Store date in ISO format
+        };
+      });
     });
     
     // Create data directory if it doesn't exist
@@ -93,7 +102,7 @@ async function fetchReviews() {
       filePath,
       JSON.stringify({
         lastUpdated: new Date().toISOString(),
-        reviews: reviews
+        reviews
       }, null, 2)
     );
     
