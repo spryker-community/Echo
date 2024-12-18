@@ -20,7 +20,7 @@ async function makeOpenAIRequest(messages: Array<{ role: string; content: string
       model: import.meta.env.VITE_AI_MODEL || 'gpt-4-0125-preview',
       messages,
       max_tokens: 1000,
-      temperature: 0.7,
+      temperature: 1.3,
       stream: false
     };
 
@@ -95,7 +95,6 @@ export async function generatePost(item: ContentItem, targetAudiences: Team[]): 
 Title: ${item.title}
 Description: ${item.description}
 Source: ${item.source}
-URL: ${item.url}
 
 Guidelines:
 - Keep it extremely concise (1-2 sentences)
@@ -103,13 +102,13 @@ Guidelines:
 - Highlight why it matters to these specific teams
 - Use a casual, Slack-style tone
 - Include 1-2 relevant emojis
-- Include the URL at the end
 - Focus on the most important/relevant point only
 
 Example formats:
-"👋 Hey Cloud Ops team! Found a solution for that deployment pipeline issue we discussed last week. [url]"
-"🔧 Architecture team: Check out this approach to microservices that aligns with our current refactoring plans. [url]"
-"🚀 Engineering: Community member found a clever way to optimize those large DB operations we've been struggling with. [url]"`;
+"Hey Cloud Ops team! 👋 Found a solution for that deployment pipeline issue we discussed last week ➡️"
+"Ola Documentation team! 👋 We noticed this post from a user, they seem to need some help contributing to our documentation pages:"
+" 🔧 Architecture team: Check out this approach to microservices that aligns with our current refactoring plans 👉"
+"Hi Engineering team 🚀 A Community member found a clever way to optimize those large DB operations we've been struggling with."`;
 
   try {
     console.log('Starting post generation for:', item.title);
@@ -125,7 +124,8 @@ Example formats:
       throw new Error('Invalid response format from API');
     }
 
-    const content = response.choices[0].message.content;
+    const generatedContent = response.choices[0].message.content.trim();
+    const content = `${generatedContent} ${item.url}`;
     console.log('Generated content:', content);
     return content;
   } catch (error) {
