@@ -2,15 +2,18 @@ import { useEffect, useState } from 'react';
 import { ContentItem, GartnerMetadata } from '../types';
 
 interface GartnerReview {
-  totalScore: string;
+  rating: number;
   title: string;
-  shortDescription: string;
-  fullReviewLink: string | null;
+  text: string;
   date: string;
+  reviewerFunction: string;
+  companySize: string;
+  industry: string;
 }
 
 interface GartnerReviewsData {
   lastUpdated: string;
+  reviewsUrl: string;
   reviews: GartnerReview[];
 }
 
@@ -30,20 +33,20 @@ export function useGartnerReviews() {
         const data: GartnerReviewsData = await response.json();
         
         const contentItems: ContentItem[] = data.reviews.map(review => ({
-          id: review.title, // Using title as ID since we don't have a specific ID field
+          id: `gartner-${review.title}`, // Using title as part of ID
           title: review.title,
-          description: review.shortDescription,
-          url: review.fullReviewLink || '',
-          date: review.date, // Using the review's date instead of lastUpdated
+          description: review.text,
+          url: data.reviewsUrl, // Using the overview page URL for all reviews
+          date: review.date,
           source: 'gartner',
           type: 'review',
           metadata: {
-            rating: review.totalScore,
+            rating: review.rating.toString(),
             reviewer: {
-              role: '',
-              industry: '',
+              role: review.reviewerFunction,
+              industry: review.industry,
               company: '',
-              size: ''
+              size: review.companySize
             }
           } as GartnerMetadata
         }));
