@@ -27,7 +27,7 @@ export function SourceFilter() {
   const { data: forumPosts, error: forumError } = useForumPosts(false);
   const { data: blueSkyPosts, error: blueSkyError } = useBlueSkyPosts(false);
   const { items: rssItems, error: rssError } = useRSSFeeds(false);
-  const { items: gartnerReviews, error: gartnerError } = useGartnerReviews();
+  const { items: gartnerItems, error: gartnerError } = useGartnerReviews();
 
   const errors = {
     youtubeError,
@@ -79,20 +79,18 @@ export function SourceFilter() {
     forumPosts,
     blueSkyPosts,
     rssItems,
-    gartnerReviews,
+    gartnerReviews: gartnerItems, // Pass gartnerItems as gartnerReviews
     errors
   });
 
-  // Separate sources into main and RSS feeds
-  let mainSources: SourceConfig[] = sources.filter(source => source.type !== 'rss');
-  const rssFeeds: RSSSourceConfig[] = sources.filter((source): source is RSSSourceConfig => source.type === 'rss');
-
-  // Move Gartner reviews to the end of the mainSources array
-  mainSources = mainSources.sort((a, b) => {
-    if (a.id === 'gartner') return 1;
-    if (b.id === 'gartner') return -1;
-    return 0;
-  });
+  // Split sources into first row and second row
+  const firstRowSources = sources.filter(source => source.type !== 'rss' && source.id !== 'gartner');
+  const secondRowSources = [
+    // Start with Gartner
+    ...sources.filter(source => source.id === 'gartner'),
+    // Then add RSS feeds
+    ...sources.filter(source => source.type === 'rss')
+  ];
 
   return (
     <div className="bg-gradient-to-br from-white via-white to-gray-50/30 
@@ -105,9 +103,10 @@ export function SourceFilter() {
         onRefresh={handleRefresh}
       />
 
-      <div className="space-y-6">
+      <div className="space-y-3">
+        {/* First row */}
         <SourceGrid
-          sources={mainSources}
+          sources={firstRowSources}
           getIcon={getSourceIcon}
           getLabel={getSourceLabel}
           getStatus={getStatus}
@@ -115,17 +114,15 @@ export function SourceFilter() {
           onToggle={toggleSource}
         />
 
-        {rssFeeds.length > 0 && (
-          <SourceGrid
-            sources={rssFeeds}
-            getIcon={getSourceIcon}
-            getLabel={getSourceLabel}
-            getStatus={getStatus}
-            getStatusColor={(id) => getStatusColor(id, errors)}
-            onToggle={toggleSource}
-            isRSSGrid
-          />
-        )}
+        {/* Second row (Gartner + RSS) */}
+        <SourceGrid
+          sources={secondRowSources}
+          getIcon={getSourceIcon}
+          getLabel={getSourceLabel}
+          getStatus={getStatus}
+          getStatusColor={(id) => getStatusColor(id, errors)}
+          onToggle={toggleSource}
+        />
       </div>
     </div>
   );
