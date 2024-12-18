@@ -1,110 +1,141 @@
 {
-  "lastUpdated": "2024-12-18T15:38:52.061Z",
+  "lastUpdated": "2024-12-18T16:13:38.181Z",
+  "reviewsUrl": "https://www.gartner.com/reviews/market/digital-commerce/vendor/spryker/product/spryker-cloud-commerce-os/reviews?marketSeoName=digital-commerce&vendorSeoName=spryker&productSeoName=spryker-cloud-commerce-os",
   "reviews": [
     {
-      "totalScore": "5.0",
+      "rating": 5,
       "title": "Flexible and scalable platforms - a valued partner",
-      "shortDescription": "we had the pleasure to partner with spryker since 4years and it has a positive transformative journey for our business. Sprykers commitment to customer success and their ... ...",
-      "fullReviewLink": null,
-      "date": "2024-08-07T22:00:00.000Z"
+      "date": "2024-08-08",
+      "reviewerFunction": "IT",
+      "companySize": "10B - 30B USD",
+      "industry": "Manufacturing Industry",
+      "text": "we had the pleasure to partner with spryker since 4years and it has a positive transformative journey for our business. Sprykers commitment to customer success and their."
     },
     {
-      "totalScore": "4.0",
+      "rating": 4,
       "title": "A Developer's Perspective on Spryker",
-      "shortDescription": "Spryker is (in my experience) a modern, very developer friendly, highly customizable and capable E-Commerce platform choice. As a wholesaler we deal with a complex ... ...",
-      "fullReviewLink": null,
-      "date": "2024-09-25T22:00:00.000Z"
+      "date": "2024-09-26",
+      "reviewerFunction": "Engineering - Other",
+      "companySize": "<50M USD",
+      "industry": "Retail Industry",
+      "text": "Spryker is (in my experience) a modern, very developer friendly, highly customizable and capable E-Commerce platform choice. As a wholesaler we deal with a complex."
     },
     {
-      "totalScore": "3.0",
+      "rating": 3,
       "title": "Good product for compelex setup but poor on basic out of the box features",
-      "shortDescription": "In some parts Spryker is very good, but in comparison to other major ecommerce platform there is many basic ecom features that are not there out of the box. The flip side is ... ...",
-      "fullReviewLink": null,
-      "date": "2024-09-23T22:00:00.000Z"
+      "date": "2024-09-24",
+      "reviewerFunction": "IT Services",
+      "companySize": "3B - 10B USD",
+      "industry": "Retail Industry",
+      "text": "In some parts Spryker is very good, but in comparison to other major ecommerce platform there is many basic ecom features that are not there out of the box. The flip side is."
     },
     {
-      "totalScore": "5.0",
+      "rating": 5,
       "title": "Top notch platform for highly customizable e-commerce",
-      "shortDescription": "Spryker is a straight-forward, state-of-the-art platform to set up a highly customizable e-commerce platform....",
-      "fullReviewLink": null,
-      "date": "2024-08-07T22:00:00.000Z"
+      "date": "2024-08-08",
+      "reviewerFunction": "Product Management",
+      "companySize": "<50M USD",
+      "industry": "Retail Industry",
+      "text": "Spryker is a straight-forward, state-of-the-art platform to set up a highly customizable e-commerce platform."
     },
     {
-      "totalScore": "4.0",
+      "rating": 4,
       "title": "Harnessing Business Potential with Tailored B2B and B2C Environments",
-      "shortDescription": "The modular architecture allows for extensive customization for complex B2Band B2C environment....",
-      "fullReviewLink": null,
-      "date": "2024-11-27T23:00:00.000Z"
+      "date": "2024-11-28",
+      "reviewerFunction": "Engineering - Other",
+      "companySize": "50M - 250M USD",
+      "industry": "Telecommunication Industry",
+      "text": "The modular architecture allows for extensive customization for complex B2Band B2C environment."
     },
     {
-      "totalScore": "4.0",
+      "rating": 4,
       "title": "Exploring Spryker Cloud Commerce: Tailored Ecommerce Solutions",
-      "shortDescription": "Spryker Cloud Commerce is a typical platform for ecommerce businesses. Nothing out of the ordinary or extraordinary ...",
-      "fullReviewLink": null,
-      "date": "2024-12-16T23:00:00.000Z"
+      "date": "2024-12-17",
+      "reviewerFunction": "Customer Service and Support",
+      "companySize": "50M - 250M USD",
+      "industry": "Banking Industry",
+      "text": "Spryker Cloud Commerce is a typical platform for ecommerce businesses. Nothing out of the ordinary or extraordinary"
     },
     {
-      "totalScore": "4.0",
+      "rating": 4,
       "title": "Unveiling the Strengths & Weaknesses of the Cloud Environment",
-      "shortDescription": "Great stability and scalability in the Cloud environment. ...",
-      "fullReviewLink": null,
-      "date": "2024-09-19T22:00:00.000Z"
+      "date": "2024-09-20",
+      "reviewerFunction": "IT Services",
+      "companySize": "30B + USD",
+      "industry": "Energy and Utilities Industry",
+      "text": "Great stability and scalability in the Cloud environment."
     },
     {
-      "totalScore": "4.0",
+      "rating": 4,
       "title": "Understanding the Modular Features of Spryker Cloud Commerce",
-      "shortDescription": "Spryker Cloud Commerce is a modular app designed for complex business like mine...",
-      "fullReviewLink": null,
-      "date": "2024-11-24T23:00:00.000Z"
+      "date": "2024-11-25",
+      "reviewerFunction": "IT Security and Risk Management",
+      "companySize": "3B - 10B USD",
+      "industry": "Manufacturing Industry",
+      "text": "Spryker Cloud Commerce is a modular app designed for complex business like mine"
     },
     {
-      "totalScore": "5.0",
+      "rating": 5,
       "title": "Examining Product's Implementation and User Feedback",
-      "shortDescription": "Good documentation and plugins with a perfect engineered implementation...",
-      "fullReviewLink": null,
-      "date": "2024-07-23T22:00:00.000Z"
+      "date": "2024-07-24",
+      "reviewerFunction": "Software Development",
+      "companySize": "<50M USD",
+      "industry": "Manufacturing Industry",
+      "text": "Good documentation and plugins with a perfect engineered implementation"
     },
     {
-      "totalScore": "5.0",
+      "rating": 5,
       "title": "great Team and Colloboration",
-      "shortDescription": "My experince so far has been very good! there are open topics , but i get constructive support quickly...",
-      "fullReviewLink": null,
-      "date": "2024-09-19T22:00:00.000Z"
+      "date": "2024-09-20",
+      "reviewerFunction": "Software Development",
+      "companySize": "250M - 500M USD",
+      "industry": "Healthcare and Biotech Industry",
+      "text": "My experince so far has been very good! there are open topics , but i get constructive support quickly"
     },
     {
-      "totalScore": "4.0",
+      "rating": 4,
       "title": "Understanding Scalability and Complexity in New Spryker System",
-      "shortDescription": "New to Spryker. So far, so good. It is a complex system with a high degree of customisation...",
-      "fullReviewLink": null,
-      "date": "2024-07-23T22:00:00.000Z"
+      "date": "2024-07-24",
+      "reviewerFunction": "Software Development",
+      "companySize": "500M - 1B USD",
+      "industry": "Manufacturing Industry",
+      "text": "New to Spryker. So far, so good. It is a complex system with a high degree of customisation"
     },
     {
-      "totalScore": "5.0",
+      "rating": 5,
       "title": "Seamless Integration and Expert Guidance",
-      "shortDescription": "Our experience with Spryker, guided by our dedicated Customer Success Manager, has been exceptional. The combination of Spryker's robust platform and unwavering ... ...",
-      "fullReviewLink": null,
-      "date": "2023-12-26T23:00:00.000Z"
+      "date": "2023-12-27",
+      "reviewerFunction": "Product Management",
+      "companySize": "50M - 250M USD",
+      "industry": "IT Services Industry",
+      "text": "Our experience with Spryker, guided by our dedicated Customer Success Manager, has been exceptional. The combination of Spryker's robust platform and unwavering."
     },
     {
-      "totalScore": "4.0",
+      "rating": 4,
       "title": "A solid commerce os for the unknown future",
-      "shortDescription": "Clear viability, direct vendor contact and participation of capability roadmap....",
-      "fullReviewLink": null,
-      "date": "2023-12-26T23:00:00.000Z"
+      "date": "2023-12-27",
+      "reviewerFunction": "Product Management",
+      "companySize": "10B - 30B USD",
+      "industry": "Retail Industry",
+      "text": "Clear viability, direct vendor contact and participation of capability roadmap."
     },
     {
-      "totalScore": "5.0",
+      "rating": 5,
       "title": "Pick up speed and make the difference",
-      "shortDescription": "Spryker gives you a best-in-class platform with everything you need. It is as flexible as a tailored solution but already provides a great architecture which save years in ... ...",
-      "fullReviewLink": null,
-      "date": "2023-12-06T23:00:00.000Z"
+      "date": "2023-12-07",
+      "reviewerFunction": "IT",
+      "companySize": "500M - 1B USD",
+      "industry": "Manufacturing Industry",
+      "text": "Spryker gives you a best-in-class platform with everything you need. It is as flexible as a tailored solution but already provides a great architecture which save years in."
     },
     {
-      "totalScore": "4.0",
+      "rating": 4,
       "title": "Modular design for scalable e-commerce needs",
-      "shortDescription": "Spryker Commerce OS shows a modular design and has strong API capabilities, catering well to scalable e-commerce needs, especially in terms of complex B2B sales ... ...",
-      "fullReviewLink": null,
-      "date": "2023-11-19T23:00:00.000Z"
+      "date": "2023-11-20",
+      "reviewerFunction": "Software Development",
+      "companySize": "3B - 10B USD",
+      "industry": "Consumer Goods Industry",
+      "text": "Spryker Commerce OS shows a modular design and has strong API capabilities, catering well to scalable e-commerce needs, especially in terms of complex B2B sales."
     }
   ]
 }
